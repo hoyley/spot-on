@@ -1,0 +1,13 @@
+<a href="/logout">Log Out</a>
+
+<%= unless @tracks == nil do %>
+    <%= for playing_track <- @tracks do %>
+        <h3><%= playing_track.user_name %><h3>
+        <%= unless playing_track.track == nil do %>
+            <p><%= playing_track.track.song_name %> -
+                <%= playing_track.track.artist_name %> -
+                <%= playing_track.track.album_name %> (<%= playing_track.progress_ms %>)<p>    
+        <% end %>
+    <% end %>
+
+<% end %>
