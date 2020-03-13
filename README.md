@@ -1,6 +1,6 @@
 # SpotOn
 
-Now you can visit [`localhost:4000`](http://localhost:4000) from your browser.
+An Elixir application that leverages the SpotifyAPI to add some cool features.
 
 ## Dependencies
 - Elixir
