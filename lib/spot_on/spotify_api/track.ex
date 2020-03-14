@@ -5,8 +5,8 @@ defmodule SpotOn.SpotifyApi.Track do
   def new(raw) do
     %{ "item" => %{"name" => song_name }} = raw
     %{ "item" => %{"album" => %{ "name" => album_name }}} = raw
-    %{ "item" => %{"artists" => [%{"name" => artist_name}]}} = raw
-    %Track{ song_name: song_name, artist_name: artist_name, album_name: album_name,
+
+    %Track{ song_name: song_name, artist_name: get_artist_name(raw), album_name: album_name,
       small_image: get_small_image(raw)}
   end
 
@@ -22,5 +22,11 @@ defmodule SpotOn.SpotifyApi.Track do
         nil -> nil
         image -> image["url"]
       end
+  end
+
+  def get_artist_name(raw) do
+    # There might be multiple artists, so we comma separate them
+    %{ "item" => %{"artists" => artists}} = raw
+    Enum.map_join(artists, ", ", fn artist -> artist["name"] end)
   end
 end

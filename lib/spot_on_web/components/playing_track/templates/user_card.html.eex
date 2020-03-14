@@ -1,5 +1,5 @@
 <% playing_track = @item %>
-<div class="card">
+<div class="card h-100">
 
   <div class="card-header">
     <div class="card-title h5"><%= playing_track.user_name %></div>
