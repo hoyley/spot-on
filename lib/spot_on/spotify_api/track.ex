@@ -15,14 +15,17 @@ defmodule SpotOn.SpotifyApi.Track do
   end
 
   def get_small_image(raw) do
-    %{ "item" => %{"album" => %{ "images" => images }}} = raw
-    images
-      |> Enum.min_by(fn image -> image["height"] end)
+    raw
+      |> get_images
+      |> Enum.min_by(fn image -> image["height"] end, fn -> nil end)
       |> case do
         nil -> nil
         image -> image["url"]
       end
   end
+
+  defp get_images(%{ "item" => %{"album" => %{ "images" => images }}}), do: images
+  defp get_images(_), do: []
 
   def get_artist_name(raw) do
     # There might be multiple artists, so we comma separate them

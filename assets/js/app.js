@@ -15,3 +15,14 @@ import "phoenix_html"
 //
 // Local files can be imported directly using relative paths, for example:
 // import socket from "./socket"
+
+// This will reload the page if the back button is used
+window.addEventListener( "pageshow", function ( event ) {
+  var historyTraversal = event.persisted ||
+    ( typeof window.performance != "undefined" &&
+      window.performance.navigation.type === 2 );
+  if ( historyTraversal ) {
+    // Handle page restore.
+    window.location.reload();
+  }
+});
