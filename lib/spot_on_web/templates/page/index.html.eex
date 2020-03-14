@@ -1,23 +1,8 @@
 <ul><%= for playing_track <- @tracks do %>
   <li>
     <%= playing_track.user_name %>
-    <%= unless playing_track.track == nil do %><p>
-      <div class="container">
-        <div class="columns">
-          <div class="column col-auto">
-            <%= unless playing_track.track.small_image == nil do %><figure class="avatar avatar-xl">
-              <img src="<%= playing_track.track.small_image %>">
-            </figure><% end %>
-          </div>
-          <div class="column col-auto">
-            <div class="rows">
-              <div class="row col-auto h5"><%= playing_track.track.song_name %></div>
-              <div class="row col-auto"><%= playing_track.track.artist_name %></div>
-              <div class="row col-auto"><%= playing_track.track.album_name %></div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </p><% end %>
+    <%= unless playing_track.track == nil do %>
+      <%= c :playing_track, :playing_track, item: playing_track %>
+    <% end %>
   </li>
 <% end %></ul>
