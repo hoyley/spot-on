@@ -1,0 +1,9 @@
+<div class="container">
+  <div class="columns">
+    <%= for playing_track <- @item do %>
+      <div class="column col-xs-6">
+        <%= c :playing_track, :user_card, item: playing_track %>
+      </div>
+    <% end %>
+  </div>
+</div>

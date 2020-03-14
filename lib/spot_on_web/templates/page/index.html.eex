@@ -1,8 +1,4 @@
-<ul><%= for playing_track <- @tracks do %>
-  <li>
-    <%= playing_track.user_name %>
-    <%= unless playing_track.track == nil do %>
-      <%= c :playing_track, :playing_track, item: playing_track %>
-    <% end %>
-  </li>
-<% end %></ul>
+
+<h3>Welcome <%= @logged_in_user_name %></h3>
+<%= c :playing_track, :user_cards, item: @tracks %>
+

@@ -26,7 +26,12 @@ defmodule SpotOnWeb.PageController do
   end
 
   def render_logged_in(conn = %Plug.Conn{}) do
-    data = %{tracks: SpotOn.Actions.get_all_users_playing_tracks()}
+    profile = SpotOn.Actions.get_my_profile(conn)
+    {:ok, %{display_name: display_name}} = profile
+
+    data = %{
+      logged_in_user_name: display_name,
+      tracks: SpotOn.Actions.get_all_users_playing_tracks()}
     render(conn, "index.html", data)
   end
 

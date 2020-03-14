@@ -6,7 +6,12 @@ defmodule SpotOn.Actions do
   alias SpotOn.SpotifyApi.PlayingTrack
   alias SpotOn.SpotifyApi.ApiFailure
   alias SpotOn.SpotifyApi.Api
+  alias SpotOn.SpotifyApi.Profile
   alias SpotOn.Model.User
+
+  def get_my_profile(conn = %Plug.Conn{}) do
+    conn |> Api.call(&Profile.me/1)
+  end
 
   def get_all_users_playing_tracks() do
     Model.list_spotify_users()
