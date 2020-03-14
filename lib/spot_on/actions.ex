@@ -12,11 +12,11 @@ defmodule SpotOn.Actions do
     Model.list_spotify_users()
       |> (Enum.map fn token ->
         get_playing_track(token)
-      end)
+      end) || []
   end
 
   def get_playing_track(user = %User{}), do: get_playing_track(user, Model.get_user_token(user))
-  
+
   def get_playing_track(user = %User{}, tokens = %UserTokens{}) do
     tokens
     |> Credentials.new()

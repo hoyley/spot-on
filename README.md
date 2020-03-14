@@ -21,7 +21,7 @@ config :spot_on, client_id: "YOUR SPOTIFY CLIENT ID",
 ## Running the Application
 
 ```bash
-docker-compose up -d db             # Start the database docdker image in detached mode
+docker-compose up -d db             # Start the database docker image in detached mode
 mix deps.get                        # Pull dependencies for Elixir
 mix ecto.setup                      # Configure the spot-on database
 cd assets && npm install & cd ..    # Install npm packages
