@@ -1,7 +1,7 @@
-<div class="container">
+<div class="container user-cards">
   <div class="columns">
     <%= for playing_track <- @item do %>
-      <div class="column col-xs-6">
+      <div class="column col-6 col-sm-12">
         <%= c :playing_track, :user_card, item: playing_track %>
       </div>
     <% end %>

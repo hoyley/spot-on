@@ -1,5 +1,5 @@
 <% playing_track = @item %>
-<div class="card h-100">
+<div class="card text-ellipsis">
 
   <div class="card-header">
     <div class="card-title h5"><%= playing_track.user_name %></div>
@@ -9,9 +9,6 @@
   <%= unless playing_track.track == nil do %><div class="card-body">
     <%= c :playing_track, :playing_track, item: playing_track %>
   </div><% end %>
-
-  <div class="card-footer">
-  </div>
 
 </div>
 

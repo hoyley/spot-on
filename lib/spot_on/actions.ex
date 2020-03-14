@@ -9,7 +9,7 @@ defmodule SpotOn.Actions do
   alias SpotOn.SpotifyApi.Profile
   alias SpotOn.Model.User
 
-  def get_my_profile(conn = %Plug.Conn{}) do
+  def get_my_profile(conn = %Credentials{}) do
     conn |> Api.call(&Profile.me/1)
   end
 

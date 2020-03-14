@@ -1,8 +1,25 @@
 
 body {
-    font-family: 'Roboto Slab', serif;
+    font-family: Gotham Rounded A,Gotham Rounded B,Helvetica Neue,Arial,sans-serif;
 }
 
-.h-100 {
-  height: 100%
+h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5 {
+  font-weight: 300;
+  margin-top: 0;
 }
+
+.user-cards .columns {
+  margin-top: -10px;
+}
+
+.user-cards .column {
+  margin-top: 10px;
+}
+
+.user-cards .card {
+  border: 0;
+  box-shadow: 0 0.25rem 1rem rgba(48,55,66,.15);
+  height: 100%;
+}
+
+

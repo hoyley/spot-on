@@ -2,10 +2,11 @@ defmodule SpotOnWeb.PageController do
   use SpotOnWeb, :controller
   alias SpotOn.SpotifyApi.Api
   alias SpotOn.SpotifyApi.Credentials
+  alias SpotOn.Actions
 
   def index(conn = %Plug.Conn{}, credentials = %Credentials{}) do
     Api.update_tokens(credentials)
-    render_logged_in(conn)
+    render(conn, "index.html", build_index_data(credentials))
   end
 
   def index(conn = %Plug.Conn{req_cookies: %{"spotify_access_token" => _, "spotify_refresh_token" => _}}, _params) do
@@ -25,14 +26,13 @@ defmodule SpotOnWeb.PageController do
       redirect conn2, external: "https://www.spotify.com/us/logout/"
   end
 
-  def render_logged_in(conn = %Plug.Conn{}) do
-    profile = SpotOn.Actions.get_my_profile(conn)
+  def build_index_data(conn = %Credentials{}) do
+    profile = Actions.get_my_profile(conn)
+    tracks = Actions.get_all_users_playing_tracks();
+
     {:ok, %{display_name: display_name}} = profile
 
-    data = %{
-      logged_in_user_name: display_name,
-      tracks: SpotOn.Actions.get_all_users_playing_tracks()}
-    render(conn, "index.html", data)
+    %{logged_in_user_name: display_name, tracks: tracks}
   end
 
 end
