@@ -16,7 +16,7 @@ defmodule SpotOn.SpotifyApi.Api do
     credentials
     |> call(&Player.current_track/1)
     |> case do
-         success = %ApiSuccess{result: :ok} -> ApiSuccess.new(PlayingTrack.new(user_id), success.credentials)
+         success = %ApiSuccess{result: :ok} -> ApiSuccess.new(nil, success.credentials)
          success = %ApiSuccess{result: track} -> ApiSuccess.new(PlayingTrack.new(user_id, track), success.credentials)
          failure = %ApiFailure{} ->
            Logger.error("#{failure.message}")

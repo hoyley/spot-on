@@ -18,8 +18,10 @@ defmodule SpotOn.Helper do
           id: playing_track.user_name,
           progress_ms: playing_track.progress_ms,
           timestamp: playing_track.timestamp,
+          is_playing: playing_track.is_playing,
           item: %{
             name: playing_track.track.song_name,
+            duration_ms: playing_track.track.duration_ms,
             album: %{
               name: playing_track.track.album_name
             },
@@ -41,9 +43,11 @@ defmodule SpotOn.Helper do
         assert track1.user_name === track2.user_name
         assert track1.progress_ms === track2.progress_ms
         assert track1.timestamp === track2.timestamp
+        assert track1.is_playing === track2.is_playing
         assert track1.track.song_name === track2.track.song_name
         assert track1.track.artist_name === track2.track.artist_name
         assert track1.track.album_name === track2.track.album_name
+        assert track1.track.duration_ms === track2.track.duration_ms
       end
     end
   end

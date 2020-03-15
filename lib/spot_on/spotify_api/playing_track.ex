@@ -6,17 +6,20 @@ defmodule SpotOn.SpotifyApi.PlayingTrack do
   defstruct user_name: nil,
     progress_ms: nil,
     timestamp: nil,
-    track: nil
+    track: nil,
+    is_playing: false
 
   def new(user_name) do
     %PlayingTrack{ user_name: user_name }
   end
 
-  def new(user_name, raw = %{ "progress_ms" => progress_ms, "timestamp" => timestamp}) do
-    PlayingTrack.new(user_name, progress_ms, timestamp, Track.new(raw))
+  def new(user_name, raw = %{ "progress_ms" => progress_ms, "timestamp" => timestamp,
+    "is_playing" => is_playing}) do
+    PlayingTrack.new(user_name, progress_ms, timestamp, is_playing, Track.new(raw))
   end
 
-  def new(user_name, progress_ms, timestamp, %Track{} = track) do
-    %PlayingTrack{ user_name: user_name, progress_ms: progress_ms, timestamp: timestamp, track: track }
+  def new(user_name, progress_ms, timestamp, is_playing, %Track{} = track) do
+    %PlayingTrack{ user_name: user_name, progress_ms: progress_ms, timestamp: timestamp,
+      is_playing: is_playing, track: track }
   end
 end

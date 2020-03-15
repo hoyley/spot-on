@@ -238,11 +238,15 @@ defmodule SpotOn.Model do
 
   """
   def get_user_tokens!(id), do: Repo.get!(UserTokens, id)
-  
+
   def get_user_token(user = %User{}) do
     query = from ut in UserTokens,
               where: ut.user_id == ^user.id
     Repo.one(query)
+  end
+
+  def get_user_token_by_user_name(user_name) do
+    get_user_token(get_user_by_name(user_name))
   end
 
   def create_user_tokens(attrs \\ %{}) do

@@ -11,15 +11,15 @@ defmodule SpotOn.ApiTest do
   describe "api" do
 
     test "get playing track" do
-      playing_track = PlayingTrack.new("username", 1000, 0, Track.new("song_name", "artist_name", "album_name"))
+      playing_track = PlayingTrack.new("username", 1000, 0, true, Track.new("song_name", "artist_name", "album_name", "url:image", 1000))
 
       playing_track
       |> test_playing_track
     end
 
     test "get playing track with multiple artists" do
-      base_track = PlayingTrack.new("username", 1000, 0, Track.new("song_name", "artist_name1", "album_name"))
-      expected_track = PlayingTrack.new("username", 1000, 0, Track.new("song_name", "artist_name1, artist_name2", "album_name"))
+      base_track = PlayingTrack.new("username", 1000, 0, true, Track.new("song_name", "artist_name1", "album_name", "url:image", 1000))
+      expected_track = PlayingTrack.new("username", 1000, 0, true, Track.new("song_name", "artist_name1, artist_name2", "album_name", "url:image", 1000))
 
       base_track
       |> to_map
