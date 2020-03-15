@@ -1,12 +1,14 @@
 defmodule SpotOnWeb.PageController do
   use SpotOnWeb, :controller
-  alias SpotOn.SpotifyApi.Api
   alias SpotOn.SpotifyApi.Credentials
+  alias SpotOn.SpotifyApi.Cookies
+  alias SpotOn.SpotifyApi.ApiSuccess
   alias SpotOn.Actions
 
   def index(conn = %Plug.Conn{}, credentials = %Credentials{}) do
-    Api.update_tokens(credentials)
-    render(conn, "index.html", build_index_data(credentials))
+    %ApiSuccess{credentials: new_credentials} = Actions.get_my_profile(credentials)
+    new_conn = conn |> Cookies.set_cookies(new_credentials)
+    render(new_conn, "index.html", build_index_data(new_credentials))
   end
 
   def index(conn = %Plug.Conn{req_cookies: %{"spotify_access_token" => _, "spotify_refresh_token" => _}}, _params) do
@@ -27,12 +29,10 @@ defmodule SpotOnWeb.PageController do
   end
 
   def build_index_data(conn = %Credentials{}) do
-    profile = Actions.get_my_profile(conn)
+    %ApiSuccess{result: profile} = Actions.get_my_profile(conn)
     tracks = Actions.get_all_users_playing_tracks();
 
-    {:ok, %{display_name: display_name}} = profile
-
-    %{logged_in_user_name: display_name, tracks: tracks}
+    %{logged_in_user_name: profile.display_name, tracks: tracks}
   end
 
 end

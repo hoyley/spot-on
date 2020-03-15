@@ -1,6 +1,7 @@
 defmodule SpotOn.SpotifyApi.PlayingTrack do
   alias SpotOn.SpotifyApi.Track
   alias SpotOn.SpotifyApi.PlayingTrack
+  require Logger
 
   defstruct user_name: nil,
     progress_ms: nil,

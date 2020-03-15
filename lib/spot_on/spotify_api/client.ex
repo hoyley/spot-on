@@ -11,28 +11,39 @@ defmodule SpotOn.SpotifyApi.ClientBehavior do
 end
 
 defmodule SpotOn.SpotifyApi.Client do
+  require Logger
   @moduledoc false
   def api_client, do: Application.get_env(:spot_on, :api_client)
   @behaviour SpotOn.SpotifyApi.ClientBehavior
 
   def get(conn_or_creds, url) do
     api_client().get(conn_or_creds, url)
+      |> log(url)
   end
 
   def put(conn_or_creds, url, body \\ "") do
     api_client().put(conn_or_creds, url, body)
+    |> log(url)
   end
 
   def post(conn_or_creds, url, body \\ "") do
     api_client().post(conn_or_creds, url, body)
+    |> log(url)
   end
 
   def delete(conn_or_creds, url) do
     api_client().delete(conn_or_creds, url)
+    |> log(url)
   end
 
   def authenticate(url, params) do
     api_client().authenticate(url, params)
+    |> log(url)
+  end
+
+  defp log(result, url) do
+    Logger.debug('Api URL [#{url}] returned: #{inspect(result)}')
+    result
   end
 end
 
@@ -77,7 +88,7 @@ defmodule SpotOn.SpotifyApi.ClientImpl do
       {"Content-Type", "application/x-www-form-urlencoded"}
     ]
   end
-  
+
   defp access_token(conn_or_creds) do
     SpotOn.SpotifyApi.Credentials.new(conn_or_creds).access_token
   end
