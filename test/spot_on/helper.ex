@@ -22,6 +22,7 @@ defmodule SpotOn.Helper do
           item: %{
             name: playing_track.track.song_name,
             duration_ms: playing_track.track.duration_ms,
+            uri: playing_track.track.song_uri,
             album: %{
               name: playing_track.track.album_name
             },
@@ -48,6 +49,7 @@ defmodule SpotOn.Helper do
         assert track1.track.artist_name === track2.track.artist_name
         assert track1.track.album_name === track2.track.album_name
         assert track1.track.duration_ms === track2.track.duration_ms
+        assert track1.track.song_uri === track2.track.song_uri
       end
     end
   end

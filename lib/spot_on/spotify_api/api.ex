@@ -10,6 +10,20 @@ defmodule SpotOn.SpotifyApi.Api do
     |> call(&Profile.me/1)
   end
 
+  def play_track(credentials = %Credentials{}, song_uri, position_ms) do
+    params = %{ uris: [song_uri], position_ms: position_ms }
+      |> Poison.encode!
+    function = fn creds -> Player.play(creds, params) end
+
+    credentials
+    |> call(function)
+  end
+
+  def pause_track(credentials = %Credentials{}) do
+    credentials
+    |> call(&Player.pause/1)
+  end
+
   def get_playing_track(user_id, credentials = %Credentials{}) do
     Logger.debug 'Fetching currently playing track from user [#{user_id}]'
 

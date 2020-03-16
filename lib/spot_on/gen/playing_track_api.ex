@@ -13,22 +13,22 @@ defmodule SpotOn.Gen.PlayingTrackApi do
   @enforce_keys [:user_id]
   defstruct user_id: nil,
             credentials: nil,
-            created_at: DateTime.utc_now,
+            created_at: nil,
             playing_track: nil,
             estimated_api_ms: 0
 
   def new(user_id) when is_binary(user_id) do
-    %PlayingTrackApi{ user_id: user_id }
+    %PlayingTrackApi{ user_id: user_id, created_at: DateTime.utc_now }
   end
 
   def new(user_id, credentials = %Credentials{}) when is_binary(user_id) do
-    %PlayingTrackApi{ user_id: user_id, credentials: credentials }
+    %PlayingTrackApi{ user_id: user_id, credentials: credentials, created_at: DateTime.utc_now }
   end
 
   def new(user_id, credentials = %Credentials{}, playing_track, estimated_api_ms)
       when is_binary(user_id) do
     %PlayingTrackApi{ user_id: user_id, credentials: credentials, playing_track: playing_track,
-                      estimated_api_ms: estimated_api_ms}
+                      estimated_api_ms: estimated_api_ms, created_at: DateTime.utc_now }
   end
 
   def start_link(user_id) do
@@ -39,16 +39,17 @@ defmodule SpotOn.Gen.PlayingTrackApi do
     GenServer.start_link(__MODULE__, PlayingTrackApi.new(user_id, creds), name: {:global, user_id})
   end
 
-  def get(user_id) do
-    start_link(user_id)
-    GenServer.call({:global, user_id}, :get)
+  def get(user_id), do:
+    get_playing_track_api(user_id)
     |> Map.get(:playing_track)
-  end
 
-  def get_estimated(user_id) do
+  def get_estimated(user_id), do:
+    get_playing_track_api(user_id)
+    |> get_estimated_track
+
+  def get_playing_track_api(user_id) do
     start_link(user_id)
     GenServer.call({:global, user_id}, :get)
-    |> get_estimated_track
   end
 
   @impl true
@@ -103,17 +104,18 @@ defmodule SpotOn.Gen.PlayingTrackApi do
     PlayingTrackApi.new(state.user_id, success.credentials, success.result, estimated_one_way_millis)
   end
 
-  defp get_estimated_track(%PlayingTrackApi{playing_track: nil}), do: nil
+  def get_estimated_track(%PlayingTrackApi{playing_track: nil}), do: nil
 
-  defp get_estimated_track(%PlayingTrackApi{playing_track:
+  def get_estimated_track(%PlayingTrackApi{playing_track:
     track = %PlayingTrack{is_playing: false}}), do: track
 
-  defp get_estimated_track(%PlayingTrackApi{playing_track:
+  def get_estimated_track(%PlayingTrackApi{playing_track:
     track = %PlayingTrack{}, estimated_api_ms: 0}), do: track
 
-  defp get_estimated_track(state = %PlayingTrackApi{playing_track: track = %PlayingTrack{}}) do
-    new_progress_millis = min(track.progress_ms + state.estimated_api_ms, track.track.duration_ms)
-    new_track = %{ track | progress_ms: new_progress_millis}
-    %{ state | playing_track: new_track }
+  def get_estimated_track(state = %PlayingTrackApi{playing_track: track = %PlayingTrack{}}) do
+    millis_since_fetch = DateTime.diff(DateTime.utc_now, state.created_at) * 1000
+    new_progress_millis = min(track.progress_ms + state.estimated_api_ms + millis_since_fetch, track.track.duration_ms)
+
+    %{ track | progress_ms: new_progress_millis}
   end
 end

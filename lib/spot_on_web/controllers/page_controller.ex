@@ -3,10 +3,12 @@ defmodule SpotOnWeb.PageController do
   alias SpotOn.SpotifyApi.Credentials
   alias SpotOn.SpotifyApi.Cookies
   alias SpotOn.SpotifyApi.ApiSuccess
+  alias SpotOn.SpotifyApi.Api
   alias SpotOn.Actions
 
   def index(conn = %Plug.Conn{}, credentials = %Credentials{}) do
-    %ApiSuccess{credentials: new_credentials} = Actions.get_my_profile(credentials)
+    %ApiSuccess{credentials: new_credentials} = Api.refresh(credentials)
+
     new_conn = conn |> Cookies.set_cookies(new_credentials)
     render(new_conn, "index.html", build_index_data(new_credentials))
   end

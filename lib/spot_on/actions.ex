@@ -26,4 +26,15 @@ defmodule SpotOn.Actions do
     || PlayingTrack.new(user_id)
   end
 
+  def play_track(user_id, song_uri, position_ms) do
+    Api.play_track(get_credentials_by_user_id(user_id), song_uri, position_ms)
+  end
+
+  def pause_track(user_id) do
+    Api.pause_track(get_credentials_by_user_id(user_id))
+  end
+
+  def start_follow(leader_id, follower_id) do
+    SpotOn.Gen.PlayingTrackFollower.start_link(leader_id, follower_id)
+  end
 end

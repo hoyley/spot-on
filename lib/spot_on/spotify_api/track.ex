@@ -1,18 +1,21 @@
 defmodule SpotOn.SpotifyApi.Track do
   alias SpotOn.SpotifyApi.Track
-  defstruct [:song_name, :artist_name, :album_name, :small_image, :duration_ms]
+  defstruct [:song_name, :song_uri, :artist_name, :album_name, :small_image, :duration_ms]
+
+  def new(%{ "item" => nil}), do: nil
 
   def new(raw) do
     %{ "item" => %{"name" => song_name }} = raw
+    %{ "item" => %{"uri" => song_uri }} = raw
     %{ "item" => %{"duration_ms" => duration_ms }} = raw
     %{ "item" => %{"album" => %{ "name" => album_name }}} = raw
 
-    %Track{ song_name: song_name, artist_name: get_artist_name(raw), album_name: album_name,
+    %Track{ song_name: song_name, song_uri: song_uri, artist_name: get_artist_name(raw), album_name: album_name,
       small_image: get_small_image(raw), duration_ms: duration_ms}
   end
 
-  def new(song_name, artist_name, album_name, small_image, duration_ms) do
-    %Track{ song_name: song_name, artist_name: artist_name, album_name: album_name,
+  def new(song_name, song_uri, artist_name, album_name, small_image, duration_ms) do
+    %Track{ song_name: song_name, song_uri: song_uri, artist_name: artist_name, album_name: album_name,
       small_image: small_image, duration_ms: duration_ms}
   end
 
