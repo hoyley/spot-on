@@ -126,7 +126,7 @@ defmodule SpotOn.Model do
 
   """
   def list_follows do
-    Repo.all(Follow)
+    Repo.all(Follow) |> Repo.preload([:leader_user, :follower_user])
   end
 
   @doc """

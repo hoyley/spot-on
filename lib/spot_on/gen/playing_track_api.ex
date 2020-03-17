@@ -6,9 +6,10 @@ defmodule SpotOn.Gen.PlayingTrackApi do
   alias SpotOn.SpotifyApi.ApiSuccess
   alias SpotOn.SpotifyApi.Credentials
   alias SpotOn.SpotifyApi.PlayingTrack
+  alias SpotOn.SpotifyApi.Track
   require Logger
 
-  @refetch_milli_delay 1 * 1000
+  @refetch_milli_delay 10 * 1000
 
   @enforce_keys [:user_id]
   defstruct user_id: nil,
@@ -72,7 +73,8 @@ defmodule SpotOn.Gen.PlayingTrackApi do
   defp refresh_state(state = %PlayingTrackApi{}, response_token) do
     try do
       new_state = get_playing_track(state)
-      schedule_get()
+
+      schedule_get(new_state)
       {response_token, new_state}
     rescue
       error -> Logger.error Exception.format(:error, error, __STACKTRACE__)
@@ -80,8 +82,16 @@ defmodule SpotOn.Gen.PlayingTrackApi do
     end
   end
 
-  defp schedule_get do
-    Process.send_after(self(), :get, @refetch_milli_delay)
+  defp schedule_get(%PlayingTrackApi{playing_track: %PlayingTrack{progress_ms: progress, track:
+      %Track{duration_ms: duration}}}) do
+    min(duration - progress, @refetch_milli_delay)
+    |> schedule_get
+  end
+
+  defp schedule_get(%PlayingTrackApi{}), do: schedule_get(@refetch_milli_delay)
+
+  defp schedule_get(delay) do
+    Process.send_after(self(), :get, delay)
   end
 
   defp get_playing_track(state = %PlayingTrackApi{credentials: nil}) do
@@ -113,7 +123,7 @@ defmodule SpotOn.Gen.PlayingTrackApi do
     track = %PlayingTrack{}, estimated_api_ms: 0}), do: track
 
   def get_estimated_track(state = %PlayingTrackApi{playing_track: track = %PlayingTrack{}}) do
-    millis_since_fetch = DateTime.diff(DateTime.utc_now, state.created_at) * 1000
+    millis_since_fetch = DateTime.diff(DateTime.utc_now, state.created_at, :millisecond)
     new_progress_millis = min(track.progress_ms + state.estimated_api_ms + millis_since_fetch, track.track.duration_ms)
 
     %{ track | progress_ms: new_progress_millis}

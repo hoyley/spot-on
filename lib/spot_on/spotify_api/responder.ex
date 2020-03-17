@@ -44,6 +44,10 @@ defmodule Responder do
         {:ok, response}
       end
 
+      def handle_response({:error, %HTTPoison.Error{id: nil, reason: :enetdown}}) do
+        {:error, "Could not reach Spotify API."}
+      end
+
       def handle_response({:error, %HTTPoison.Error{id: nil, reason: :nxdomain}}) do
         {:error, "Could not reach Spotify API."}
       end
