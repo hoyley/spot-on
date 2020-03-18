@@ -51,6 +51,14 @@ defmodule Responder do
       def handle_response({:error, %HTTPoison.Error{id: nil, reason: :nxdomain}}) do
         {:error, "Could not reach Spotify API."}
       end
+
+      def handle_response({:error, %HTTPoison.Error{id: nil, reason: :closed}}) do
+        {:error, "The connection closed."}
+      end
+
+      def handle_response({:error, %HTTPoison.Error{id: nil, reason: :timeout}}) do
+        {:error, "The connection timed out."}
+      end
     end
   end
 end

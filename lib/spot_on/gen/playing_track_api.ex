@@ -114,14 +114,19 @@ defmodule SpotOn.Gen.PlayingTrackApi do
     PlayingTrackApi.new(state.user_id, success.credentials, success.result, estimated_one_way_millis)
   end
 
+  # The estimated_track is a clone of PlayingTrack with an API latency estimate applied.
+  # If playing_track is not set, then nil return
   def get_estimated_track(%PlayingTrackApi{playing_track: nil}), do: nil
 
+  # If playing_track is set, but it's not playing, no need to adjust progress_ms for latency.
   def get_estimated_track(%PlayingTrackApi{playing_track:
     track = %PlayingTrack{is_playing: false}}), do: track
 
+  # If the playing_track is set, and estimated_api_ms is not set, then no need to adjust progress_ms for latency.
   def get_estimated_track(%PlayingTrackApi{playing_track:
     track = %PlayingTrack{}, estimated_api_ms: 0}), do: track
 
+  # playing_track is set properly. Lets adjust for latency.
   def get_estimated_track(state = %PlayingTrackApi{playing_track: track = %PlayingTrack{}}) do
     millis_since_fetch = DateTime.diff(DateTime.utc_now, state.created_at, :millisecond)
     new_progress_millis = min(track.progress_ms + state.estimated_api_ms + millis_since_fetch, track.track.duration_ms)
