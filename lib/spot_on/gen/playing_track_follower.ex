@@ -96,8 +96,7 @@ defmodule SpotOn.Gen.PlayingTrackFollower do
       Logger.info 'Tracking follower [#{state.follower_name}] and leader [#{state.leader_name}]. Songs are not the same.'
     else
       Logger.info 'Tracking follower [#{state.follower_name}] and leader [#{state.leader_name}] on the same song.
-        Leader progress [#{leader.progress_ms}], follower progress [#{follower.progress_ms}],
-        difference [#{progress_difference}]'
+       Leader progress [#{leader.progress_ms}], follower progress [#{follower.progress_ms}], difference [#{progress_difference}]'
     end
 
     # Only update if leader and follower are either on different songs or they are not in sync (within threshold)
@@ -113,7 +112,7 @@ defmodule SpotOn.Gen.PlayingTrackFollower do
 
     new_progress = (leader.progress_ms + playing_track.estimated_api_ms + @expected_api_delay_ms)
     Logger.info 'Follower [#{state.follower_name}] needs update from [#{leader.user_name}] --
-      song context [#{leader.track.song_uri}] song name [#{leader.track.song_name}] position [#{new_progress}].'
+        song context [#{leader.track.song_uri}] song name [#{leader.track.song_name}] position [#{new_progress}].'
 
     playing_track
       |> Map.get(:credentials)

@@ -1,8 +1,11 @@
+<% {tracks, follow_map} = @item %>
+
 <div class="container user-cards">
   <div class="columns">
-    <%= for playing_track <- @item do %>
+    <%= for playing_track <- tracks do %>
       <div class="column col-6 col-sm-12">
-        <%= c :playing_track, :user_card, item: playing_track %>
+        <% leader = get_leader(follow_map, playing_track.user_name) %>
+        <%= c :playing_track, :user_card, item: {playing_track, leader} %>
       </div>
     <% end %>
   </div>

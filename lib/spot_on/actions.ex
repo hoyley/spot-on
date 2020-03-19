@@ -40,4 +40,10 @@ defmodule SpotOn.Actions do
   def stop_follow(leader_id, follower_id) do
     FollowerSupervisor.stop_follow(leader_id, follower_id)
   end
+
+  def get_follow_map() do
+    Model.list_follows() |> Enum.reduce(%{}, fn (follows, map) ->
+      Map.put(map, follows.follower_user.name, follows.leader_user.name)
+    end)
+  end
 end

@@ -32,9 +32,10 @@ defmodule SpotOnWeb.PageController do
 
   def build_index_data(conn = %Credentials{}) do
     %ApiSuccess{result: profile} = Actions.get_my_profile(conn)
-    tracks = Actions.get_all_users_playing_tracks();
+    tracks = Actions.get_all_users_playing_tracks()
+    follow_map = Actions.get_follow_map()
 
-    %{logged_in_user_name: profile.display_name, tracks: tracks}
+    %{logged_in_user_name: profile.display_name, tracks: tracks, follow_map: follow_map}
   end
 
 end
