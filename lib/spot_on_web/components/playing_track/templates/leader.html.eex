@@ -1,3 +1,2 @@
-<% leader = @item %>
 
-<div><%= 'Following #{leader}' %></div>
+<div><%= 'Following #{@leader}' %></div>
