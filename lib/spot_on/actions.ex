@@ -1,5 +1,7 @@
 defmodule SpotOn.Actions do
   alias SpotOn.Model
+  alias SpotOn.Model.User
+  alias SpotOn.Gen.FollowerSupervisor
   alias SpotOn.SpotifyApi.Api
   alias SpotOn.SpotifyApi.Credentials
   alias SpotOn.SpotifyApi.PlayingTrack
@@ -22,18 +24,20 @@ defmodule SpotOn.Actions do
   end
 
   def get_playing_track(user_id) when is_binary(user_id) do
-    SpotOn.Gen.PlayingTrackApi.get(user_id)
+    SpotOn.Gen.PlayingTrackSync.get(user_id)
     || PlayingTrack.new(user_id)
   end
 
-  def start_follow(leader_id, follower_id) do
-    SpotOn.Gen.PlayingTrackFollower.start_link(leader_id, follower_id)
+  def start_follow(leader_name, follower_name) do
+    with %User{} = leader <- Model.get_user_by_name(leader_name),
+      %User{} = follower <- Model.get_user_by_name(follower_name),
+      Model.create_follow(%{leader_user_id: leader.id, follower_user_id: follower.id}) do
+
+      FollowerSupervisor.start_follow(leader_name, follower_name)
+    end
   end
 
-  def start_all_follows() do
-    Model.list_follows()
-    |> (Enum.map fn follow ->
-      start_follow(follow.leader_user.name, follow.follower_user.name)
-    end) || []
+  def stop_follow(leader_id, follower_id) do
+    FollowerSupervisor.stop_follow(leader_id, follower_id)
   end
 end

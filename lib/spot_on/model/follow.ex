@@ -13,8 +13,8 @@ defmodule SpotOn.Model.Follow do
   @doc false
   def changeset(follow, attrs) do
     follow
-    |> cast(attrs, [])
-    |> validate_required([])
-    |> unique_constraint([:leader_user_id, :follower_user_id])
+    |> cast(attrs, [:leader_user_id, :follower_user_id])
+    |> validate_required([:leader_user_id, :follower_user_id])
+    |> unique_constraint(:unique_constraint_leader_follower, name: :unique_leader_follower)
   end
 end

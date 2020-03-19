@@ -18,6 +18,8 @@ config :spot_on, SpotOnWeb.Endpoint,
   pubsub: [name: SpotOn.PubSub, adapter: Phoenix.PubSub.PG2],
   live_view: [signing_salt: "oCaaA7x2"]
 
+config :spot_on, enable_spotify_workers: true
+
 # Configures Elixir's Logger
 config :logger, :console,
   format: "$time $metadata[$level] $message\n",

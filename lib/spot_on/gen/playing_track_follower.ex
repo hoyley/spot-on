@@ -1,7 +1,8 @@
 defmodule SpotOn.Gen.PlayingTrackFollower do
   use GenServer
   alias SpotOn.Gen.PlayingTrackFollower
-  alias SpotOn.Gen.PlayingTrackApi
+  alias SpotOn.Gen.PlayingTrackSync
+  alias SpotOn.Gen.PlayingTrackSyncState
   alias SpotOn.SpotifyApi.PlayingTrack
   alias SpotOn.SpotifyApi.Api
   require Logger
@@ -9,7 +10,7 @@ defmodule SpotOn.Gen.PlayingTrackFollower do
   @refresh_delay_ms 10 * 1000
   @progress_threshold 2 * 1000
 
-  # It apears that the spotify API lags when setting song progress. This is to account for some of that volatility
+  # It appears that the Spotify API lags when setting song progress. This is to account for some of that volatility
   @expected_api_delay_ms 100
 
   @enforce_keys [:leader_name, :follower_name]
@@ -23,11 +24,13 @@ defmodule SpotOn.Gen.PlayingTrackFollower do
   def start_link(leader_name, follower_name), do: start_link(PlayingTrackFollower.new(leader_name, follower_name))
 
   def start_link(follower = %PlayingTrackFollower{}) do
-    GenServer.start_link(__MODULE__, follower, name: {:global, {follower.leader_name, follower.follower_name}})
+    GenServer.start_link(__MODULE__, follower, name: {:global, follower})
   end
 
   @impl true
   def init(state = %PlayingTrackFollower{}) do
+    Process.flag(:trap_exit, true)
+
     Logger.info '[#{state.follower_name}] is now following [#{state.leader_name}]'
     refresh(state, :ok)
   end
@@ -35,6 +38,18 @@ defmodule SpotOn.Gen.PlayingTrackFollower do
   @impl true
   def handle_info(:refresh, state = %PlayingTrackFollower{}) do
     refresh(state, :noreply)
+  end
+
+  @impl true
+  def handle_info({:EXIT, _pid, _reason}, state = %PlayingTrackFollower{}) do
+    Logger.info '[#{state.follower_name}] stopped following [#{state.leader_name}]'
+    {:noreply, state}
+  end
+
+  @impl true
+  def handle_info(msg, state = %PlayingTrackFollower{}) do
+    Logger.error 'PlayingTrackFollower received unexpected message: #{inspect(msg)}'
+    {:noreply, state}
   end
 
   defp refresh(state = %PlayingTrackFollower{}, reply_token) do
@@ -49,10 +64,10 @@ defmodule SpotOn.Gen.PlayingTrackFollower do
   end
 
   defp refresh(state = %PlayingTrackFollower{}) do
-    leader_track = PlayingTrackApi.get_playing_track_api(state.leader_name)
-    follower_track = PlayingTrackApi.get_playing_track_api(state.follower_name)
-    leader_track_estimated = leader_track |> PlayingTrackApi.get_estimated_track
-    follower_track_estimated = follower_track |> PlayingTrackApi.get_estimated_track
+    leader_track = PlayingTrackSync.get_sync_state(state.leader_name)
+    follower_track = PlayingTrackSync.get_sync_state(state.follower_name)
+    leader_track_estimated = leader_track |> PlayingTrackSyncState.get_estimated_track
+    follower_track_estimated = follower_track |> PlayingTrackSyncState.get_estimated_track
 
     refresh(leader_track_estimated, follower_track_estimated, state)
   end
@@ -80,7 +95,9 @@ defmodule SpotOn.Gen.PlayingTrackFollower do
     if !same_song do
       Logger.info 'Tracking follower [#{state.follower_name}] and leader [#{state.leader_name}]. Songs are not the same.'
     else
-      Logger.info 'Tracking follower [#{state.follower_name}] and leader [#{state.leader_name}] on the same song. Leader progress [#{leader.progress_ms}], follower progress [#{follower.progress_ms}], difference [#{progress_difference}]'
+      Logger.info 'Tracking follower [#{state.follower_name}] and leader [#{state.leader_name}] on the same song.
+        Leader progress [#{leader.progress_ms}], follower progress [#{follower.progress_ms}],
+        difference [#{progress_difference}]'
     end
 
     # Only update if leader and follower are either on different songs or they are not in sync (within threshold)
@@ -92,10 +109,11 @@ defmodule SpotOn.Gen.PlayingTrackFollower do
 
   defp force_follow(leader = %PlayingTrack{}, state = %PlayingTrackFollower{}) do
     playing_track = state.follower_name
-    |> PlayingTrackApi.get_playing_track_api()
+    |> PlayingTrackSync.get_sync_state()
 
     new_progress = (leader.progress_ms + playing_track.estimated_api_ms + @expected_api_delay_ms)
-    Logger.info 'Follower [#{state.follower_name}] needs update from [#{leader.user_name}] -- song context [#{leader.track.song_uri}] song name [#{leader.track.song_name}] position [#{new_progress}].'
+    Logger.info 'Follower [#{state.follower_name}] needs update from [#{leader.user_name}] --
+      song context [#{leader.track.song_uri}] song name [#{leader.track.song_name}] position [#{new_progress}].'
 
     playing_track
       |> Map.get(:credentials)
@@ -108,7 +126,7 @@ defmodule SpotOn.Gen.PlayingTrackFollower do
     Logger.info 'Follower [#{state.follower_name}] will be paused because leader [#{state.leader_name}] is paused.'
 
     state.follower_name
-    |> PlayingTrackApi.get_playing_track_api()
+    |> PlayingTrackSync.get_sync_state()
     |> Map.get(:credentials)
     |> Api.pause_track()
 

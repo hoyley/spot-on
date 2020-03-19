@@ -5,16 +5,18 @@ defmodule SpotOn.Application do
 
   use Application
 
+  @enable_spotify_workers Application.get_env(:spot_on, :enable_spotify_workers)
+
   def start(_type, _args) do
     # List all child processes to be supervised
     children = [
       # Start the Ecto repository
       SpotOn.Repo,
       # Start the endpoint when the application starts
-      SpotOnWeb.Endpoint
+      SpotOnWeb.Endpoint,
       # Starts a worker by calling: SpotOn.Worker.start_link(arg)
       # {SpotOn.Worker, arg},
-    ]
+    ] ++ get_spotify_workers()
 
     # See https://hexdocs.pm/elixir/Supervisor.html
     # for other strategies and supported options
@@ -27,5 +29,13 @@ defmodule SpotOn.Application do
   def config_change(changed, _new, removed) do
     SpotOnWeb.Endpoint.config_change(changed, removed)
     :ok
+  end
+
+  def get_spotify_workers() do
+    case @enable_spotify_workers do
+      true -> [ SpotOn.Gen.FollowerSupervisor,
+                SpotOn.Gen.Initializer ]
+      false -> []
+    end
   end
 end

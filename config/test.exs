@@ -15,7 +15,8 @@ config :spot_on, SpotOnWeb.Endpoint,
   http: [port: 4002],
   server: false
 
-config :spot_on, api_client: ClientBehaviorMock
+config :spot_on, api_client: ClientBehaviorMock,
+                 enable_spotify_workers: false
 
 # Print only warnings and errors during test
 config :logger, level: :warn
