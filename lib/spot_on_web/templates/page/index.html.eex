@@ -1,3 +1,3 @@
 
 <h3 class="ml-2">Welcome <%= @logged_in_user_name %></h3>
-<%= c :playing_track, :user_cards, tracks: @tracks, follow_map: @follow_map %>
+<%= c :playing_track, :user_cards, conn: @conn, tracks: @tracks, follow_map: @follow_map %>

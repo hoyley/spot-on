@@ -5,6 +5,7 @@ defmodule SpotOnWeb.PageController do
   alias SpotOn.SpotifyApi.ApiSuccess
   alias SpotOn.SpotifyApi.Api
   alias SpotOn.Actions
+  require Logger
 
   def index(conn = %Plug.Conn{}, credentials = %Credentials{}) do
     %ApiSuccess{credentials: new_credentials} = Api.refresh(credentials)
@@ -28,6 +29,24 @@ defmodule SpotOnWeb.PageController do
       |> delete_resp_cookie("_spot_on_web_key")
 
       redirect conn2, external: "https://www.spotify.com/us/logout/"
+  end
+
+  def follow(conn = %Plug.Conn{}, params) when is_map(params) do
+    follow(conn, params["leader"])
+  end
+
+  def follow(conn = %Plug.Conn{}, leader_name) do
+    Actions.start_follow(conn |> Credentials.new, leader_name)
+    redirect conn, to: "/"
+  end
+
+  def unfollow(conn = %Plug.Conn{}, params) do
+    unfollow(conn, params["leader"], params["follower"])
+  end
+
+  def unfollow(conn = %Plug.Conn{}, leader_name, follower_name) do
+    Actions.stop_follow(leader_name, follower_name)
+    redirect conn, to: "/"
   end
 
   def build_index_data(conn = %Credentials{}) do

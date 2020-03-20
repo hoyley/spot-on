@@ -145,6 +145,15 @@ defmodule SpotOn.Model do
   """
   def get_follow!(id), do: Repo.get!(Follow, id)
 
+  def get_follow(leader_name, follower_name) do
+    query = from f in Follow,
+            join: lu in User, on: f.leader_user_id == lu.id,
+            join: fu in User, on: f.follower_user_id == fu.id,
+            where: lu.name == ^leader_name and fu.name == ^follower_name
+
+    Repo.one(query)
+  end
+
   @doc """
   Creates a follow.
 

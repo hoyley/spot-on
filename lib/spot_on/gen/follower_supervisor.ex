@@ -45,6 +45,8 @@ defmodule SpotOn.Gen.FollowerSupervisor do
   def stop_follow(pid) when is_pid(pid) do
     pid
     |> Process.exit(:ok)
+
+     DynamicSupervisor.terminate_child(__MODULE__, pid)
   end
 
 end

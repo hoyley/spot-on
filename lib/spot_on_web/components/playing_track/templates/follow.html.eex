@@ -1,0 +1,4 @@
+
+<%= if can_follow(@conn, @user) do %>
+  <%= link "Follow", class: "btn btn-link", to: Routes.page_path(@conn, :follow, leader: @user) %>
+<% end %>

@@ -1,2 +1,6 @@
-
-<div><%= 'Following #{@leader}' %></div>
+<%= unless @leader == nil do %>
+  <div>
+    <%= 'Following #{@leader}' %>
+    <%= link "Unfollow", class: "btn btn-link", to: Routes.page_path(@conn, :unfollow, follower: @follower, leader: @leader) %>
+  </div>
+<% end %>

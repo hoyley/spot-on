@@ -7,7 +7,7 @@ defmodule SpotOn.Gen.PlayingTrackFollower do
   alias SpotOn.SpotifyApi.Api
   require Logger
 
-  @refresh_delay_ms 10 * 1000
+  @refresh_delay_ms 1 * 1000
   @progress_threshold 2 * 1000
 
   # It appears that the Spotify API lags when setting song progress. This is to account for some of that volatility

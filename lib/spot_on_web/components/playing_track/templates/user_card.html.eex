@@ -9,12 +9,11 @@
     <%= c :playing_track, :playing_track, item: @playing_track %>
   </div><% end %>
 
-  <%= unless @leader == nil do %>
-    <div class="card-footer">
-      <div class="card-subtitle text-gray">
-        <%= c :playing_track, :leader, leader: @leader %>
-      </div>
+  <div class="card-footer">
+    <div class="card-subtitle text-gray">
+      <%= c :playing_track, :leader, conn: @conn, leader: @leader, follower: @playing_track.user_name %>
+      <%= c :playing_track, :follow, conn: @conn, user: @playing_track.user_name %>
     </div>
-  <% end %>
+  </div>
 </div>
 

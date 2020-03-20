@@ -1,8 +1,8 @@
 defmodule SpotOn.Actions do
   alias SpotOn.Model
-  alias SpotOn.Model.User
   alias SpotOn.Gen.FollowerSupervisor
   alias SpotOn.SpotifyApi.Api
+  alias SpotOn.SpotifyApi.ApiSuccess
   alias SpotOn.SpotifyApi.Credentials
   alias SpotOn.SpotifyApi.PlayingTrack
   require Logger
@@ -28,17 +28,19 @@ defmodule SpotOn.Actions do
     || PlayingTrack.new(user_id)
   end
 
-  def start_follow(leader_name, follower_name) do
-    with %User{} = leader <- Model.get_user_by_name(leader_name),
-      %User{} = follower <- Model.get_user_by_name(follower_name),
-      Model.create_follow(%{leader_user_id: leader.id, follower_user_id: follower.id}) do
+  def start_follow(conn = %Credentials{}, leader_name) do
+    %ApiSuccess{result: profile} = get_my_profile(conn)
+    follower_name = profile.id
 
-      FollowerSupervisor.start_follow(leader_name, follower_name)
-    end
+    leader = Model.get_user_by_name(leader_name)
+    follower = Model.get_user_by_name(follower_name)
+    Model.create_follow(%{leader_user_id: leader.id, follower_user_id: follower.id})
+    FollowerSupervisor.start_follow(leader_name, follower_name)
   end
 
-  def stop_follow(leader_id, follower_id) do
-    FollowerSupervisor.stop_follow(leader_id, follower_id)
+  def stop_follow(leader_name, follower_name) do
+    Model.delete_follow(Model.get_follow(leader_name, follower_name))
+    FollowerSupervisor.stop_follow(leader_name, follower_name)
   end
 
   def get_follow_map() do

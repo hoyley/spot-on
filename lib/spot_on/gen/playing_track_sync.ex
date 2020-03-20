@@ -9,7 +9,7 @@ defmodule SpotOn.Gen.PlayingTrackSync do
   alias SpotOn.SpotifyApi.Track
   require Logger
 
-  @refetch_milli_delay 10 * 1000
+  @refetch_milli_delay 1 * 1000
 
   def start_link(user_id) do
     GenServer.start_link(__MODULE__, PlayingTrackSyncState.new(user_id), name: {:global, user_id})
