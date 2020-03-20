@@ -58,7 +58,7 @@ defmodule SpotOn.Model do
   """
   def create_user(nil), do: create_user(%{})
   def create_user(attrs = %{}) when is_map(attrs) do
-    test = %User{}
+    %User{}
     |> User.changeset(attrs)
     |> Repo.insert!()
   end

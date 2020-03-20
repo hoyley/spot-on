@@ -30,7 +30,7 @@ defmodule SpotOn.ApiTest do
     def test_playing_track(track = %PlayingTrack{}), do: test_playing_track(track |> to_map, track)
 
     def test_playing_track(track_api_response = %{}, expected_track = %PlayingTrack{}) do
-      user = Model.create_user(expected_track.user_name)
+      user = Model.create_user(%{name: expected_track.user_name, display_name: expected_track.user_name})
       Model.create_user_tokens(%{user_id: user.id, access_token: "access", refresh_token: "refresh"})
       creds = Model.get_user_token(user) |> Credentials.new
 

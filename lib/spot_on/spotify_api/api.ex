@@ -1,5 +1,6 @@
 defmodule SpotOn.SpotifyApi.Api do
   use SpotOn.SpotifyApi.ApiHelpers
+  alias SpotOn.SpotifyApi.ApiFailure
   alias SpotOn.SpotifyApi.Player
   alias SpotOn.SpotifyApi.Profile
   alias SpotOn.SpotifyApi.PlayingTrack
@@ -34,7 +35,7 @@ defmodule SpotOn.SpotifyApi.Api do
          success = %ApiSuccess{result: track} -> ApiSuccess.new(PlayingTrack.new(user_id, track), success.credentials)
          failure = %ApiFailure{} ->
            Logger.error("#{failure.message}")
-           ApiSuccess.new(PlayingTrack.new(user_id), failure.credentials)
+           failure
        end
   end
 end

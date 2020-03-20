@@ -1,7 +1,6 @@
 defmodule SpotOnWeb.Models.PageModel do
   alias SpotOnWeb.Models.PageModel
   alias SpotOn.Model.User
-  alias SpotOn.SpotifyApi.PlayingTrack
 
   defstruct ~w[ conn logged_in_user users follow_map playing_tracks]a
 
