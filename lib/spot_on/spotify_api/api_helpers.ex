@@ -8,6 +8,7 @@ defmodule SpotOn.SpotifyApi.ApiHelpers do
       alias SpotOn.SpotifyApi.ApiFailure
       alias SpotOn.SpotifyApi.ApiSuccess
       alias SpotOn.Model
+      alias SpotOn.Model.User
       require Logger
 
       def call(conn = %Plug.Conn{}, api_function), do: call(conn |> Credentials.new, api_function, true)
@@ -52,8 +53,13 @@ defmodule SpotOn.SpotifyApi.ApiHelpers do
         |> update_tokens_internal
       end
 
-      defp update_tokens_internal(success = %ApiSuccess{result: %Profile{id: spotify_id}, credentials: credentials}) do
-        Model.create_or_update_user_tokens(spotify_id, credentials)
+      defp update_tokens_internal(success = %ApiSuccess{
+          result: %Profile{id: spotify_id, display_name: display_name},
+          credentials: credentials}) do
+
+        {:ok, user = %User{}} = Model.create_or_update_user(%{name: spotify_id, display_name: display_name})
+        Model.create_or_update_user_tokens(user, credentials)
+
         success
       end
 

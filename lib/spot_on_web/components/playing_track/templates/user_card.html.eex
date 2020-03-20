@@ -1,18 +1,21 @@
+<% playing_track = get_playing_track(@page_model, @user) %>
+<% leader = get_leader(@page_model, @user) %>
+
 <div class="card text-ellipsis">
 
   <div class="card-header">
-    <div class="card-title h5"><%= @playing_track.user_name %></div>
+    <div class="card-title h5"><%= @user.display_name %></div>
     <div class="card-subtitle text-gray">Spotify User</div>
   </div>
 
-  <%= unless @playing_track.track == nil do %><div class="card-body">
-    <%= c :playing_track, :playing_track, item: @playing_track %>
+  <%= unless playing_track == nil do %><div class="card-body">
+    <%= c :playing_track, :playing_track, playing_track: playing_track %>
   </div><% end %>
 
   <div class="card-footer">
     <div class="card-subtitle text-gray">
-      <%= c :playing_track, :leader, conn: @conn, leader: @leader, follower: @playing_track.user_name %>
-      <%= c :playing_track, :follow, conn: @conn, user: @playing_track.user_name %>
+      <%= c :playing_track, :leader, page_model: @page_model, follower: @user, leader: leader %>
+      <%= c :playing_track, :follow, page_model: @page_model, user: @user %>
     </div>
   </div>
 </div>

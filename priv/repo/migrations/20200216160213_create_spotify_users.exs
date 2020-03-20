@@ -3,8 +3,8 @@ defmodule SpotOn.Repo.Migrations.CreateSpotifyUsers do
 
   def change do
     create table(:spotify_users) do
-      add :name, :string
-
+      add :name, :string, null: false
+      add :display_name, :string, null: false
       timestamps()
     end
 

@@ -9,10 +9,6 @@ defmodule SpotOn.SpotifyApi.PlayingTrack do
     track: nil,
     is_playing: false
 
-  def new(user_name) do
-    %PlayingTrack{ user_name: user_name }
-  end
-
   def new(user_name, raw = %{ "progress_ms" => progress_ms, "timestamp" => timestamp,
     "is_playing" => is_playing}) do
     PlayingTrack.new(user_name, progress_ms, timestamp, is_playing, Track.new(raw))

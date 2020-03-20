@@ -4,11 +4,11 @@ defmodule SpotOn.Actions do
   alias SpotOn.SpotifyApi.Api
   alias SpotOn.SpotifyApi.ApiSuccess
   alias SpotOn.SpotifyApi.Credentials
-  alias SpotOn.SpotifyApi.PlayingTrack
   require Logger
 
-  def get_my_profile(conn = %Credentials{}) do
-    Api.get_my_profile(conn)
+  def get_my_user(conn = %Credentials{}) do
+    %ApiSuccess{result: profile} = Api.get_my_profile(conn)
+    Model.get_user_by_name(profile.id)
   end
 
   def get_credentials_by_user_id(user_id) do
@@ -16,20 +16,22 @@ defmodule SpotOn.Actions do
     |> Credentials.new
   end
 
-  def get_all_users_playing_tracks() do
+  def get_all_playing_tracks() do
     Model.list_spotify_users()
-      |> (Enum.map fn user ->
-        get_playing_track(user.name)
-      end) || []
+      |> (Enum.map fn user -> get_playing_track(user.name) end)
+      |> Enum.reject(&is_nil/1)
+  end
+
+  def get_all_users() do
+    Model.list_spotify_users()
   end
 
   def get_playing_track(user_id) when is_binary(user_id) do
     SpotOn.Gen.PlayingTrackSync.get(user_id)
-    || PlayingTrack.new(user_id)
   end
 
   def start_follow(conn = %Credentials{}, leader_name) do
-    %ApiSuccess{result: profile} = get_my_profile(conn)
+    %ApiSuccess{result: profile} = Api.get_my_profile(conn)
     follower_name = profile.id
 
     leader = Model.get_user_by_name(leader_name)

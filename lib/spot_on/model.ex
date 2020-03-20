@@ -40,7 +40,7 @@ defmodule SpotOn.Model do
 
   def get_user_by_name(name) do
     query = from u in User,
-                 where: u.name == ^name
+            where: u.name == ^name
     Repo.one(query)
   end
 
@@ -57,14 +57,21 @@ defmodule SpotOn.Model do
 
   """
   def create_user(nil), do: create_user(%{})
-  def create_user(attrs = %{}) do
-    %User{}
+  def create_user(attrs = %{}) when is_map(attrs) do
+    test = %User{}
     |> User.changeset(attrs)
     |> Repo.insert!()
   end
 
-  def create_user(name) do
+  def create_user_by_name(name) do
     create_user(%{"name" => name})
+  end
+
+  def create_or_update_user(user) when is_map(user) do
+    case get_user_by_name(user.name) do
+      nil -> {:ok, create_user(user)}
+      existing_user -> update_user(existing_user, user)
+    end
   end
 
   @doc """
@@ -279,9 +286,9 @@ defmodule SpotOn.Model do
     end
   end
 
-  def create_or_update_user_tokens(spotify_user, creds = %Credentials{}) do
-    case get_user_by_name(spotify_user) do
-      nil  -> create_user(spotify_user)
+  def create_or_update_user_tokens(spotify_user_name, creds = %Credentials{}) when is_binary(spotify_user_name) do
+    case get_user_by_name(spotify_user_name) do
+      nil  -> create_user(spotify_user_name)
       user -> user
     end |> create_or_update_user_tokens(creds)
   end

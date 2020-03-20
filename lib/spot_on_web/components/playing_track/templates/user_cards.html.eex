@@ -1,9 +1,8 @@
 <div class="container user-cards">
   <div class="columns">
-    <%= for playing_track <- @tracks do %>
+    <%= for user <- @page_model.users do %>
       <div class="column col-6 col-sm-12">
-        <% leader = get_leader(@follow_map, playing_track.user_name) %>
-        <%= c :playing_track, :user_card, conn: @conn, playing_track: playing_track, leader: leader %>
+        <%= c :playing_track, :user_card, user: user, page_model: @page_model %>
       </div>
     <% end %>
   </div>

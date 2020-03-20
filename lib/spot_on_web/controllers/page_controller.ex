@@ -5,13 +5,15 @@ defmodule SpotOnWeb.PageController do
   alias SpotOn.SpotifyApi.ApiSuccess
   alias SpotOn.SpotifyApi.Api
   alias SpotOn.Actions
+  alias SpotOnWeb.Models.PageModel
+
   require Logger
 
   def index(conn = %Plug.Conn{}, credentials = %Credentials{}) do
     %ApiSuccess{credentials: new_credentials} = Api.refresh(credentials)
 
     new_conn = conn |> Cookies.set_cookies(new_credentials)
-    render(new_conn, "index.html", build_index_data(new_credentials))
+    render(new_conn, "index.html", build_index_data(new_conn))
   end
 
   def index(conn = %Plug.Conn{req_cookies: %{"spotify_access_token" => _, "spotify_refresh_token" => _}}, _params) do
@@ -49,12 +51,15 @@ defmodule SpotOnWeb.PageController do
     redirect conn, to: "/"
   end
 
-  def build_index_data(conn = %Credentials{}) do
-    %ApiSuccess{result: profile} = Actions.get_my_profile(conn)
-    tracks = Actions.get_all_users_playing_tracks()
+  def build_index_data(conn = %Plug.Conn{}) do
+    creds = conn |> Credentials.new
+
+    user = Actions.get_my_user(creds)
+    tracks = Actions.get_all_playing_tracks()
+    users = Actions.get_all_users()
     follow_map = Actions.get_follow_map()
 
-    %{logged_in_user_name: profile.display_name, tracks: tracks, follow_map: follow_map}
+    %{page_model: PageModel.new(conn, user, users, tracks, follow_map)}
   end
 
 end
