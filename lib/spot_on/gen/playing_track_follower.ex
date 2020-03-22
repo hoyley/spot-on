@@ -7,11 +7,11 @@ defmodule SpotOn.Gen.PlayingTrackFollower do
   alias SpotOn.SpotifyApi.Api
   require Logger
 
-  @refresh_delay_ms 1 * 1000
-  @progress_threshold 2 * 1000
+  @refresh_delay_ms Application.get_env(:spot_on, :follower_poll_ms)
+  @progress_threshold Application.get_env(:spot_on, :follower_threshold_ms)
 
   # It appears that the Spotify API lags when setting song progress. This is to account for some of that volatility
-  @expected_api_delay_ms 100
+  @expected_api_delay_ms Application.get_env(:spot_on, :spotify_set_playing_song_delay_ms)
 
   @enforce_keys [:leader_name, :follower_name]
   defstruct leader_name: nil,
@@ -21,7 +21,8 @@ defmodule SpotOn.Gen.PlayingTrackFollower do
     %PlayingTrackFollower{ leader_name: leader_name, follower_name: follower_name }
   end
 
-  def start_link(leader_name, follower_name), do: start_link(PlayingTrackFollower.new(leader_name, follower_name))
+  def start_link(leader_name, follower_name),
+      do: start_link(PlayingTrackFollower.new(leader_name, follower_name))
 
   def start_link(follower = %PlayingTrackFollower{}) do
     GenServer.start_link(__MODULE__, follower, name: {:global, follower})
@@ -52,6 +53,18 @@ defmodule SpotOn.Gen.PlayingTrackFollower do
     {:noreply, state}
   end
 
+  def stop_follow(leader_name, follower_name), do:
+    :global.whereis_name(PlayingTrackFollower.new(leader_name, follower_name))
+    |> stop_follow()
+
+  defp stop_follow(:undefined), do: nil
+
+  defp stop_follow(pid) when is_pid(pid) do
+    pid
+    |> Process.exit(:ok)
+    pid
+  end
+
   defp refresh(state = %PlayingTrackFollower{}, reply_token) do
     try do
       new_state = refresh(state)
@@ -78,7 +91,7 @@ defmodule SpotOn.Gen.PlayingTrackFollower do
   # When the follower is not active, do nothing
   defp refresh(_, nil, state = %PlayingTrackFollower{}), do: state
 
-  # When the leader is not playing but the following is playing, force pause the follower
+  # When the leader is not playing but the follower is playing, force pause the follower
   defp refresh(_leader = %PlayingTrack{is_playing: false}, _follower = %PlayingTrack{is_playing: true},
          state = %PlayingTrackFollower{}), do: force_pause(state)
 
@@ -88,6 +101,7 @@ defmodule SpotOn.Gen.PlayingTrackFollower do
 
   # When the leader is playing, and the follower is active, only update the follower under certain conditions
   defp refresh(leader = %PlayingTrack{}, follower = %PlayingTrack{}, state = %PlayingTrackFollower{}) do
+
     same_song = (leader.track.song_uri === follower.track.song_uri)
     progress_difference = leader.progress_ms - follower.progress_ms
     outside_threshold = abs(progress_difference) > @progress_threshold

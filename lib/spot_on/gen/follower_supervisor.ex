@@ -36,17 +36,14 @@ defmodule SpotOn.Gen.FollowerSupervisor do
   end
 
   def stop_follow(leader_name, follower_name) do
-    :global.whereis_name(PlayingTrackFollower.new(leader_name, follower_name))
-    |> stop_follow()
+    PlayingTrackFollower.stop_follow(leader_name, follower_name)
+    |> stop_follow
   end
 
   def stop_follow(:undefined), do: nil
 
   def stop_follow(pid) when is_pid(pid) do
-    pid
-    |> Process.exit(:ok)
-
-     DynamicSupervisor.terminate_child(__MODULE__, pid)
+    DynamicSupervisor.terminate_child(__MODULE__, pid)
   end
 
 end

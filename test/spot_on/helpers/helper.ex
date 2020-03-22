@@ -1,4 +1,4 @@
-defmodule SpotOn.Helper do
+defmodule SpotOn.Helpers.Helper do
 
   alias SpotOn.SpotifyApi.PlayingTrack
 
@@ -35,6 +35,14 @@ defmodule SpotOn.Helper do
         }
       end
 
+      def update(track = %PlayingTrack{}, attrs \\ %{}) do
+        track_map = track
+        |> to_map
+        |> deep_merge(attrs)
+
+        PlayingTrack.new(track.user_name, track_map)
+      end
+
       def add_artist(playing_track = %{}, artist_name) do
         playing_track
         |> update_in([:item, :artists], &(&1 ++ [%{ name: artist_name}]))
@@ -51,6 +59,17 @@ defmodule SpotOn.Helper do
         assert track1.track.duration_ms === track2.track.duration_ms
         assert track1.track.song_uri === track2.track.song_uri
       end
+
+      def deep_merge(left, right) do
+        Map.merge(left, right, &deep_resolve/3)
+      end
+
+      defp deep_resolve(_key, left = %{}, right = %{}) do
+        deep_merge(left, right)
+      end
+
+      defp deep_resolve(_key, _left, right), do: right
+
     end
   end
 end

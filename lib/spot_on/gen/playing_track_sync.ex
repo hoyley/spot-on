@@ -9,7 +9,7 @@ defmodule SpotOn.Gen.PlayingTrackSync do
   alias SpotOn.SpotifyApi.Track
   require Logger
 
-  @refetch_milli_delay 1 * 1000
+  @refetch_milli_delay Application.get_env(:spot_on, :playing_track_poll_ms)
 
   def start_link(user_id) do
     GenServer.start_link(__MODULE__, PlayingTrackSyncState.new(user_id), name: {:global, user_id})
@@ -44,6 +44,19 @@ defmodule SpotOn.Gen.PlayingTrackSync do
   @impl true
   def handle_info(:get, state = %PlayingTrackSyncState{}) do
     refresh_state(state, :noreply)
+  end
+
+  def stop_sync(:undefined), do: nil
+
+  def stop_sync(pid) when is_pid(pid) do
+    pid
+    |> Process.exit(:ok)
+    pid
+  end
+
+  def stop_sync(user_name) do
+    :global.whereis_name(user_name)
+    |> stop_sync()
   end
 
   defp refresh_state(state = %PlayingTrackSyncState{}, response_token) do

@@ -30,6 +30,11 @@ config :phoenix, :json_library, Jason
 
 config :spot_on, api_client: SpotOn.SpotifyApi.ClientImpl
 
+config :spot_on, playing_track_poll_ms: 1000,
+                 follower_poll_ms: 1000,
+                 follower_threshold_ms: 2000,
+                 spotify_set_playing_song_delay_ms: 100
+
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
 import_config "#{Mix.env()}.exs"

@@ -18,5 +18,9 @@ config :spot_on, SpotOnWeb.Endpoint,
 config :spot_on, api_client: ClientBehaviorMock,
                  enable_spotify_workers: false
 
+config :spot_on, playing_track_poll_ms: 20,
+                 follower_poll_ms: 20,
+                 spotify_set_playing_song_delay_ms: 5
+
 # Print only warnings and errors during test
 config :logger, level: :warn
