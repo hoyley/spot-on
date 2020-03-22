@@ -9,6 +9,7 @@ defmodule SpotOn.Repo do
              |> set_if_exists(:password, System.get_env("PGPASSWORD"))
              |> set_if_exists(:database, System.get_env("PGDATABASE"))
              |> set_if_exists(:hostname, System.get_env("PGHOST"))
+             |> set_boolean_if_exists(:ssl, System.get_env("PGSSL"))
              |> set_int_if_exists(:port, System.get_env("PGPORT"))
     {:ok, config}
   end
@@ -20,6 +21,10 @@ defmodule SpotOn.Repo do
   defp set_int_if_exists(config, _env_symbol, nil), do: config
   defp set_int_if_exists(config, env_symbol, env_value) do
     Keyword.put(config, env_symbol, env_value |> String.to_integer)
+  end
+  defp set_boolean_if_exists(config, _env_symbol, nil), do: config
+  defp set_boolean_if_exists(config, env_symbol, env_value) do
+    Keyword.put(config, env_symbol, (String.downcase(env_value) == "true"))
   end
 
 end

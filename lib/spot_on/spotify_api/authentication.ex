@@ -106,8 +106,14 @@ defmodule SpotOn.SpotifyApi.Authentication do
 
   @doc false
   def body_params(%Credentials{refresh_token: nil}, code) do
-    "grant_type=authorization_code&code=#{code}&redirect_uri=#{SpotifyConfig.callback_url()}"
+    "grant_type=authorization_code&code=#{code}&redirect_uri=#{redirect_uri()}"
   end
 
   def body_params(auth, _code), do: body_params(auth)
+
+  defp redirect_uri() do
+    SpotOnWeb.Endpoint.url()
+    |> URI.merge(SpotifyConfig.callback_url())
+    |> URI.to_string()
+  end
 end

@@ -10,8 +10,15 @@ use Mix.Config
 # which you should run after static files are built and
 # before starting your production server.
 config :spot_on, SpotOnWeb.Endpoint,
-  url: [host: "example.com", port: 80],
+  http: [port: System.get_env("HTTP_PORT", "8080")],
+  url: [host: System.get_env("URL_HOST", "localhost"), port: System.get_env("URL_PORT", "80")],
   cache_static_manifest: "priv/static/cache_manifest.json"
+
+config :spot_on, SpotOn.Repo,
+        database: "spot-on",
+        port: 5435,
+        ssl: true,
+        pool_size: 10
 
 # Do not print debug messages in production
 config :logger, level: :info

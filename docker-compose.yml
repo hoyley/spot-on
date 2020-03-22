@@ -4,14 +4,21 @@ services:
   web:
     build:
       context: .
+      args:
+        - MIX_ENV=${MIX_ENV:-dev}
+    image: hoyley/spot-on
     environment:
-      PGUSER: postgres
-      PGPASSWORD: postgres
-      PGDATABASE: spot-on
-      PGPORT: 5432
-      PGHOST: db
+      PGUSER: ${PGUSER:-postgres}
+      PGPASSWORD: ${PGPASSWORD:-postgres}
+      PGDATABASE: ${PGDATABASE:-spot-on}
+      PGPORT: ${PGPORT:-5432}
+      PGHOST: ${PGHOST:-db}
+      HTTP_PORT: ${HTTP_PORT:-8080}
+      URL_HOST: ${URL_HOST:-localhost}
+      URL_PORT: ${URL_PORT:-80}
     ports:
-      - "4000:4000"
+      - "8080:8080"
+      - "80:80"
     depends_on:
       - db
   db:

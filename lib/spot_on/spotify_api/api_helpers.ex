@@ -20,12 +20,11 @@ defmodule SpotOn.SpotifyApi.ApiHelpers do
       end
 
       defp handle_call_response(result = %ApiSuccess{}, _, _), do: result
-      defp handle_call_response(failure = %ApiFailure{status: 401, credentials: credentials}, api_function, true) do
+      defp handle_call_response(failure = %ApiFailure{credentials: credentials}, api_function, true) do
         Logger.info "Attempted to call API Endpoint received #{failure.status} - [#{failure.message}]. Refresh will follow."
         refresh(credentials)
         |> handle_refresh_response(api_function)
       end
-      defp handle_call_response(failure = %ApiFailure{}, _, _), do: failure
 
       defp handle_refresh_response(fail = %ApiFailure{}, _), do: fail
       defp handle_refresh_response(success = %ApiSuccess{}, api_function), do: call(success.credentials, api_function, false)

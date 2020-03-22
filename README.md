@@ -32,3 +32,12 @@ mix phx.server                      # Run the webserver outside of docker
 
 Once you've installed mix dependencies and run ecto.setup, you can now build and run in docker. To build the web server 
 in docker, run `docker-compose build`. To run the web server in docker, run `docker-compose up web`.
+
+## Building for Production
+
+mix deps.get --only prod
+MIX_ENV=prod mix compile
+cd assets && npm install & cd ..
+npm run deploy --prefix ./assets
+mix phx.digest
+MIX_ENV=prod docker-compose build

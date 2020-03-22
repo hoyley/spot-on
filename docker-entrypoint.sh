@@ -1,5 +1,6 @@
-#!/bin/bash
+#!/bin/sh
 # Docker entrypoint script.
+echo "Starting docker for Spot-On for environment $MIX_ENV"
 
 # Wait until Postgres is ready
 while ! pg_isready -q -h $PGHOST -p $PGPORT -U $PGUSER

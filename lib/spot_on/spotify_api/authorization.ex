@@ -42,14 +42,20 @@ defmodule SpotOn.SpotifyApi.Authorization do
   @doc false
   def scoped_auth do
     "https://accounts.spotify.com/authorize?client_id=#{SpotifyConfig.client_id()}&response_type=code&redirect_uri=#{
-      SpotifyConfig.callback_url()
+      redirect_uri()
     }&scope=#{scopes()}"
   end
 
   @doc false
   def scopeless_auth do
     "https://accounts.spotify.com/authorize?client_id=#{SpotifyConfig.client_id()}&response_type=code&redirect_uri=#{
-      SpotifyConfig.callback_url()
+      redirect_uri()
     }"
+  end
+
+  defp redirect_uri() do
+    SpotOnWeb.Endpoint.url()
+    |> URI.merge(SpotifyConfig.callback_url())
+    |> URI.to_string()
   end
 end

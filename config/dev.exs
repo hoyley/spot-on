@@ -66,8 +66,6 @@ config :spot_on, SpotOnWeb.Endpoint,
     ]
   ]
 
-config :spot_on, api_client: SpotOn.SpotifyApi.ClientImpl
-
 # Do not include metadata nor timestamps in development logs
 config :logger, :console, format: "[$level] $message\n", level: :info
 
