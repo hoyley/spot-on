@@ -35,9 +35,11 @@ in docker, run `docker-compose build`. To run the web server in docker, run `doc
 
 ## Building for Production
 
+```bash
 mix deps.get --only prod
 MIX_ENV=prod mix compile
 cd assets && npm install & cd ..
 npm run deploy --prefix ./assets
 mix phx.digest
 MIX_ENV=prod docker-compose build
+```
