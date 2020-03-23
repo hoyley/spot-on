@@ -15,7 +15,7 @@ defmodule SpotOn.Helpers.Defaults do
   def default_playing_track_album_name, do: "Album"
   def default_playing_track_small_image, do: "http://test.com/image"
   def default_playing_track_duration_ms, do: 120000
-  def default_playing_progress_ms, do: 500
+  def default_playing_progress_ms, do: 5000
 
   def default_playing_track, do: PlayingTrack.new(default_user_name() , default_playing_progress_ms(), 1231231, true,
     Track.new(default_playing_track_song_name(), default_playing_track_song_uri(), default_playing_track_artist_name(),

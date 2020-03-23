@@ -1,9 +1,11 @@
 defmodule SpotOn.Helpers.Helper do
 
   alias SpotOn.SpotifyApi.PlayingTrack
+  import SpotOn.Helpers.Defaults
 
   defmacro __using__(_) do
     quote do
+      def to_json(nil), do: ""
       def to_json(playing_track = %PlayingTrack{}) do
         to_map(playing_track)
         |> to_json
@@ -33,6 +35,10 @@ defmodule SpotOn.Helpers.Helper do
             ]
           }
         }
+      end
+
+      def to_map(json) do
+        json |> Poison.decode
       end
 
       def update(track = %PlayingTrack{}, attrs \\ %{}) do
@@ -70,6 +76,28 @@ defmodule SpotOn.Helpers.Helper do
 
       defp deep_resolve(_key, _left, right), do: right
 
+      def new_paused_track(user_name) do
+        default_playing_track()
+        |> Map.put(:user_name, user_name)
+        |> Map.put(:is_playing, false)
+      end
+
+      def new_playing_track(%{user_name: user_name, song_uri: song_uri, progress_ms: progress_ms}) do
+        default_playing_track()
+        |> Map.put(:user_name, user_name)
+        |> Map.put(:is_playing, true)
+        |> Map.put(:progress_ms, progress_ms)
+        |> put_in([Access.key(:track), Access.key(:song_uri)], song_uri)
+      end
+
+      def new_playing_track(%{user_name: user_name, song_uri: song_uri}), do:
+        new_playing_track(%{user_name: user_name, song_uri: song_uri, progress_ms: default_playing_progress_ms()})
+
+      def new_playing_track(user_name) do
+        default_playing_track()
+        |> Map.put(:user_name, user_name)
+        |> Map.put(:is_playing, true)
+      end
     end
   end
 end

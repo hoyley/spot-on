@@ -4,6 +4,7 @@ defmodule SpotOn.SpotifyApi.ClientBehavior do
 
   @moduledoc false
   @callback get(Any.t(), String.t()) :: tuple()
+  @callback put(Any.t(), String.t()) :: tuple()
   @callback put(Any.t(), String.t(), Any.t()) :: tuple()
   @callback post(Any.t(), String.t(), Any.t()) :: tuple()
   @callback delete(Any.t(), String.t()) :: tuple()

@@ -6,6 +6,8 @@ defmodule SpotOn.Helpers.ModelHelper do
   def create_user_and_tokens(), do: create_user_and_tokens(default_user_name())
   def create_user_and_tokens(user_name), do: create_user_and_tokens(user_name, default_user_display_name(),
     default_access_token(), default_refresh_token())
+  def create_user_and_tokens(user_name, creds = %Credentials{}), do: create_user_and_tokens(user_name,
+    default_user_display_name(), creds.access_token, creds.refresh_token)
 
   def create_user_and_tokens(user_name, display_name, access_token, refresh_token) do
     user = Model.create_user(%{name: user_name, display_name: display_name})

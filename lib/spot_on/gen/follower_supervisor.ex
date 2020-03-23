@@ -4,6 +4,8 @@ defmodule SpotOn.Gen.FollowerSupervisor do
   alias SpotOn.Gen.PlayingTrackFollower
   require Logger
 
+  def start_link(), do: start_link(nil)
+
   def start_link(_) do
     DynamicSupervisor.start_link(__MODULE__, nil, name: __MODULE__)
   end
