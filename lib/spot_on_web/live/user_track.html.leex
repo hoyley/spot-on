@@ -1,0 +1,20 @@
+<div>
+  <div class="card-header">
+    <div class="card-title h5"><%= @user.display_name %></div>
+    <div class="card-subtitle text-gray">Spotify User</div>
+  </div>
+
+  <%= if @playing_track != nil do %><div class="card-body">
+    <%= live_component @socket, SpotOnWeb.PlayingTrack, playing_track: @playing_track %>
+  </div><% end %>
+
+  <div class="card-footer">
+    <div class="card-subtitle text-gray">
+      <%= live_component @socket, SpotOnWeb.UserTrackLeader, logged_in_user_name: @logged_in_user_name,
+          user: @user, leader: @leader %>
+      <%= live_component @socket, SpotOnWeb.UserTrackFollower, logged_in_user_name: @logged_in_user_name,
+          potential_leader: @user, current_leader: @logged_in_user_leader %>
+    </div>
+  </div>
+</div>
+

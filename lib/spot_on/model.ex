@@ -158,7 +158,15 @@ defmodule SpotOn.Model do
             join: fu in User, on: f.follower_user_id == fu.id,
             where: lu.name == ^leader_name and fu.name == ^follower_name
 
-    Repo.one(query)
+    Repo.one(query) |> Repo.preload([:leader_user, :follower_user])
+  end
+
+  def get_follow_by_follower_name(follower_name) do
+    query = from f in Follow,
+                 join: fu in User, on: f.follower_user_id == fu.id,
+                 where: fu.name == ^follower_name
+
+    Repo.one(query) |> Repo.preload([:leader_user, :follower_user])
   end
 
   @doc """

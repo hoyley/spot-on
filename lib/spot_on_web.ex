@@ -37,6 +37,8 @@ defmodule SpotOnWeb do
       # Use all HTML functionality (forms, tags, etc)
       use Phoenix.HTML
 
+      import Phoenix.LiveView.Helpers
+
       import SpotOnWeb.ErrorHelpers
       import SpotOnWeb.Gettext
       import SpotOnWeb.Components.ComponentHelpers
@@ -49,6 +51,7 @@ defmodule SpotOnWeb do
       use Phoenix.Router
       import Plug.Conn
       import Phoenix.Controller
+      import Phoenix.LiveView.Router
     end
   end
 

@@ -12,7 +12,13 @@ defmodule SpotOnWeb.PageController do
   def index(conn = %Plug.Conn{}, credentials = %Credentials{}) do
     %ApiSuccess{credentials: new_credentials} = Api.refresh(credentials)
 
-    new_conn = conn |> Cookies.set_cookies(new_credentials)
+    new_conn = conn
+    |> Cookies.set_cookies(new_credentials)
+    |> put_session("logged_in_user_name", Actions.get_my_user(new_credentials).name)
+    |> put_session("spotify_access_token", new_credentials.access_token)
+    |> put_session("spotify_refresh_token", new_credentials.refresh_token)
+    # |> redirect(to: "/live_view")
+
     render(new_conn, "index.html", build_index_data(new_conn))
   end
 

@@ -31,8 +31,7 @@ defmodule SpotOn.Gen.PlayingTrackSync do
 
   @impl true
   def init(state = %PlayingTrackSyncState{}) do
-    Logger.debug 'Started GenServer for PlayingTrack[#{state.user_id}]'
-
+    Logger.info 'Syncing the currently playing track for [#{state.user_id}]'
     refresh_state(state, :ok)
   end
 
@@ -46,11 +45,16 @@ defmodule SpotOn.Gen.PlayingTrackSync do
     refresh_state(state, :noreply)
   end
 
+  def handle_info({:EXIT, _pid, _reason}, state = %PlayingTrackSyncState{}) do
+    Logger.info 'Stopped syncing the currently playing track for [#{state.user_id}]'
+  end
+
   def stop_sync(:undefined), do: nil
 
   def stop_sync(pid) when is_pid(pid) do
     pid
     |> Process.exit(:ok)
+
     pid
   end
 
@@ -62,6 +66,9 @@ defmodule SpotOn.Gen.PlayingTrackSync do
   defp refresh_state(state = %PlayingTrackSyncState{}, response_token) do
     try do
       new_state = get_playing_track(state)
+
+      # If the song has changed, publish changes to pubsub
+      publish_changes(state, new_state)
 
       schedule_get(new_state)
       {response_token, new_state}
@@ -101,5 +108,16 @@ defmodule SpotOn.Gen.PlayingTrackSync do
     estimated_one_way_millis = total_millis / 2
 
     PlayingTrackSyncState.new(state.user_id, success.credentials, success.result, estimated_one_way_millis)
+  end
+
+  defp publish_changes(old_state = %PlayingTrackSyncState{}, new_state = %PlayingTrackSyncState{}) do
+    unless PlayingTrackSyncState.playing_is_approx_same(new_state, old_state) do
+      estimated_track = new_state |> PlayingTrackSyncState.get_estimated_track
+
+      Logger.info '[#{new_state.user_id}] changed playing state.'
+
+      Phoenix.PubSub.broadcast(:playing_track, "playing_track_update:#{new_state.user_id}",
+        {:update, estimated_track})
+    end
   end
 end

@@ -1,0 +1,13 @@
+<div class="tile tile-centered">
+  <div class="tile-icon">
+    <i class="icon icon-file centered">
+      <%= unless @playing_track.track.small_image == nil do %><figure class="avatar avatar-xl">
+        <img src="<%= @playing_track.track.small_image %>">
+      </figure><% end %>
+    </i>
+  </div>
+  <div class="tile-content">
+    <div class="tile-title"><%= @playing_track.track.song_name %></div>
+    <small class="tile-subtle"><%= @playing_track.track.artist_name %> - <%= @playing_track.track.album_name %></small>
+  </div>
+</div>

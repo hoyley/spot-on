@@ -62,7 +62,8 @@ config :spot_on, SpotOnWeb.Endpoint,
       ~r"priv/static/.*(js|css|png|jpeg|jpg|gif|svg)$",
       ~r"priv/gettext/.*(po)$",
       ~r"lib/spot_on_web/(live|views)/.*(ex)$",
-      ~r"lib/spot_on_web/templates/.*(eex)$"
+      ~r"lib/spot_on_web/templates/.*(eex)$",
+      ~r{lib/spot_on_web/live/.*(ex)$}
     ]
   ]
 
