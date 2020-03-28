@@ -1,4 +1,0 @@
-
-<%= if logged_in_user_can_follow(@page_model, @user) do %>
-  <%= link "Follow", class: "btn btn-link", to: Routes.page_path(@page_model.conn, :follow, leader: @user.name) %>
-<% end %>

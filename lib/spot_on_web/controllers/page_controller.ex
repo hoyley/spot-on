@@ -5,11 +5,10 @@ defmodule SpotOnWeb.PageController do
   alias SpotOn.SpotifyApi.ApiSuccess
   alias SpotOn.SpotifyApi.Api
   alias SpotOn.Actions
-  alias SpotOnWeb.Models.PageModel
 
   require Logger
 
-  def index(conn = %Plug.Conn{}, credentials = %Credentials{}) do
+  def index(conn = %Plug.Conn{  }, credentials = %Credentials{}) do
     %ApiSuccess{credentials: new_credentials} = Api.refresh(credentials)
 
     new_conn = conn
@@ -18,10 +17,7 @@ defmodule SpotOnWeb.PageController do
     |> put_session("spotify_access_token", new_credentials.access_token)
     |> put_session("spotify_refresh_token", new_credentials.refresh_token)
 
-    # To show live view
-    redirect(new_conn, to: "/live_view")
-    # To show standard Phoenix
-    # render(new_conn, "index.html", build_index_data(new_conn))
+    redirect(new_conn, to: "/users")
   end
 
   def index(conn = %Plug.Conn{req_cookies: %{"spotify_access_token" => _, "spotify_refresh_token" => _}}, _params) do
@@ -40,34 +36,4 @@ defmodule SpotOnWeb.PageController do
 
       redirect conn2, external: "https://www.spotify.com/us/logout/"
   end
-
-  def follow(conn = %Plug.Conn{}, params) when is_map(params) do
-    follow(conn, params["leader"])
-  end
-
-  def follow(conn = %Plug.Conn{}, leader_name) do
-    Actions.start_follow(conn |> Credentials.new, leader_name)
-    redirect conn, to: "/"
-  end
-
-  def unfollow(conn = %Plug.Conn{}, params) do
-    unfollow(conn, params["leader"], params["follower"])
-  end
-
-  def unfollow(conn = %Plug.Conn{}, leader_name, follower_name) do
-    Actions.stop_follow(leader_name, follower_name)
-    redirect conn, to: "/"
-  end
-
-  def build_index_data(conn = %Plug.Conn{}) do
-    creds = conn |> Credentials.new
-
-    user = Actions.get_my_user(creds)
-    tracks = Actions.get_all_playing_tracks()
-    users = Actions.get_all_users()
-    follow_map = Actions.get_follow_map()
-
-    %{page_model: PageModel.new(conn, user, users, tracks, follow_map)}
-  end
-
 end

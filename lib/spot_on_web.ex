@@ -41,7 +41,6 @@ defmodule SpotOnWeb do
 
       import SpotOnWeb.ErrorHelpers
       import SpotOnWeb.Gettext
-      import SpotOnWeb.Components.ComponentHelpers
       alias SpotOnWeb.Router.Helpers, as: Routes
     end
   end
