@@ -28,6 +28,8 @@ config :logger, :console,
 # Use Jason for JSON parsing in Phoenix
 config :phoenix, :json_library, Jason
 
+config :phoenix, template_engines: [leex: Phoenix.LiveView.Engine]
+
 config :spot_on, api_client: SpotOn.SpotifyApi.ClientImpl
 
 config :spot_on, playing_track_poll_ms: 1000,

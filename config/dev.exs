@@ -62,12 +62,13 @@ config :spot_on, SpotOnWeb.Endpoint,
       ~r"priv/static/.*(js|css|png|jpeg|jpg|gif|svg)$",
       ~r"priv/gettext/.*(po)$",
       ~r"lib/spot_on_web/(live|views)/.*(ex)$",
-      ~r"lib/spot_on_web/templates/.*(eex)$"
+      ~r"lib/spot_on_web/templates/.*(eex)$",
+      ~r{lib/spot_on_web/live/.*(ex)$}
     ]
   ]
 
 # Do not include metadata nor timestamps in development logs
-config :logger, :console, format: "[$level] $message\n", level: :info
+config :logger, :console, format: "$time [$level] $message\n", level: :info
 
 # Set a higher stacktrace during development. Avoid configuring such
 # in production as building large stacktraces may be expensive.

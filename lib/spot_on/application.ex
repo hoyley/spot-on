@@ -14,8 +14,10 @@ defmodule SpotOn.Application do
       SpotOn.Repo,
       # Start the endpoint when the application starts
       SpotOnWeb.Endpoint,
-      # Starts a worker by calling: SpotOn.Worker.start_link(arg)
-      # {SpotOn.Worker, arg},
+      %{
+        id: Phoenix.PubSub.PG2,
+        start: {Phoenix.PubSub.PG2, :start_link, [:spot_on, []]}
+      }
     ] ++ get_spotify_workers()
 
     # See https://hexdocs.pm/elixir/Supervisor.html

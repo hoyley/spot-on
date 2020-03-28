@@ -4,9 +4,11 @@ defmodule SpotOnWeb.Router do
   pipeline :browser do
     plug :accepts, ["html"]
     plug :fetch_session
-    plug :fetch_flash
+    plug :fetch_flash,
+    plug Phoenix.LiveView.Flash
     plug :protect_from_forgery
     plug :put_secure_browser_headers
+    plug :put_root_layout, {SpotOnWeb.LayoutView, :root}
   end
 
   pipeline :api do
@@ -15,6 +17,8 @@ defmodule SpotOnWeb.Router do
 
   scope "/", SpotOnWeb do
     pipe_through :browser
+
+    live "/users", UserTrackList
 
     get "/", PageController, :index
     get "/logout", PageController, :logout

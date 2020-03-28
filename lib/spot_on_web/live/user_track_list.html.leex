@@ -1,0 +1,19 @@
+<div>
+  <h3 class="ml-2">Welcome <%= @logged_in_user.display_name %></h3>
+  <div class="container user-cards">
+    <div class="columns">
+      <%= for user <- @users do %>
+        <div class="column col-6 col-sm-12">
+          <div class="card text-ellipsis">
+          <%= live_render @socket, SpotOnWeb.UserTrack, id: 'user_track-#{user.name}', user: user,
+              session: %{
+                "logged_in_user_name" => @logged_in_user.name,
+                "user_name" => user.name,
+                "spotify_access_token" => @spotify_credentials.access_token,
+                "spotify_refresh_token" => @spotify_credentials.refresh_token} %>
+                </div>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>

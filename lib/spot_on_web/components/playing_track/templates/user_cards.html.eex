@@ -1,9 +1,0 @@
-<div class="container user-cards">
-  <div class="columns">
-    <%= for user <- @page_model.users do %>
-      <div class="column col-6 col-sm-12">
-        <%= c :playing_track, :user_card, user: user, page_model: @page_model %>
-      </div>
-    <% end %>
-  </div>
-</div>

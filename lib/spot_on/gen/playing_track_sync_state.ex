@@ -3,6 +3,8 @@ defmodule SpotOn.Gen.PlayingTrackSyncState do
   alias SpotOn.SpotifyApi.PlayingTrack
   alias SpotOn.SpotifyApi.Credentials
 
+  @progress_similarity_threshold_ms 50
+
   @enforce_keys [:user_id]
   defstruct user_id: nil,
             credentials: nil,
@@ -43,4 +45,20 @@ defmodule SpotOn.Gen.PlayingTrackSyncState do
 
     %{ track | progress_ms: new_progress_millis}
   end
+
+  def playing_is_approx_same(%PlayingTrackSyncState{playing_track: nil},
+         %PlayingTrackSyncState{playing_track: nil}), do: true
+
+  def playing_is_approx_same(state1 = %PlayingTrackSyncState{playing_track: track1},
+        state2 = %PlayingTrackSyncState{playing_track: track2})
+        when track1 !=  nil and track2 != nil do
+    est1 = state1 |> get_estimated_track
+    est2 = state2 |> get_estimated_track
+
+    est1.track.song_uri == est2.track.song_uri
+    && abs(est1.progress_ms - est2.progress_ms) < @progress_similarity_threshold_ms
+    && est1.is_playing == est2.is_playing
+  end
+
+  def playing_is_approx_same(%PlayingTrackSyncState{}, %PlayingTrackSyncState{}), do: false
 end

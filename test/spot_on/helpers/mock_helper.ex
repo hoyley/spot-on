@@ -44,7 +44,7 @@ defmodule SpotOn.Helpers.MockHelper do
         |> expect(:put, fn (creds, url, params) ->
           {:ok, %{"uris" => [uri], "position_ms" => progress_ms}} = to_map(params)
 
-          # Ensure the progress requested in the body is within 5 milliseconds of what we expect.
+          # Ensure the progress requested in the body is within a few milliseconds of what we expect.
           # This isn't exact because it depends on code runtime
           expected_progress_ms = playing_track.progress_ms + @spotify_set_playing_song_delay_ms
           assert expected_progress_ms - 10 <= progress_ms

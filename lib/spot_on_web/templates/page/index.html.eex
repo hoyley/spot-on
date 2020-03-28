@@ -1,3 +1,0 @@
-
-<h3 class="ml-2">Welcome <%= @page_model.logged_in_user.display_name %></h3>
-<%= c :playing_track, :user_cards, page_model: @page_model %>

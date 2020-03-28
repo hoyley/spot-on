@@ -31,18 +31,25 @@ defmodule SpotOn.Actions do
   end
 
   def start_follow(conn = %Credentials{}, leader_name) do
-    %ApiSuccess{result: profile} = Api.get_my_profile(conn)
+    %ApiSuccess{result: profile, credentials: creds} = Api.get_my_profile(conn)
     follower_name = profile.id
 
     leader = Model.get_user_by_name(leader_name)
     follower = Model.get_user_by_name(follower_name)
     Model.create_follow(%{leader_user_id: leader.id, follower_user_id: follower.id})
     FollowerSupervisor.start_follow(leader_name, follower_name)
+    %{follower_name: follower_name, leader_name: leader_name, credentials: creds}
   end
 
-  def stop_follow(leader_name, follower_name) do
-    Model.delete_follow(Model.get_follow(leader_name, follower_name))
+  def stop_follow(conn = %Credentials{}, leader_name) when leader_name !== nil do
+    %ApiSuccess{result: profile, credentials: creds} = Api.get_my_profile(conn)
+    follower_name = profile.id
+
+    follow = Model.get_follow(leader_name, follower_name)
+    follow && Model.delete_follow(follow)
+
     FollowerSupervisor.stop_follow(leader_name, follower_name)
+    %{follower_name: follower_name, leader_name: leader_name, credentials: creds}
   end
 
   def get_follow_map() do
