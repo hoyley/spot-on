@@ -6,7 +6,7 @@ services:
       context: .
       args:
         - MIX_ENV=${MIX_ENV:-dev}
-    image: hoyley/spot-on
+    image: hoyley/spot-on:latest
     environment:
       PGUSER: ${PGUSER:-postgres}
       PGPASSWORD: ${PGPASSWORD:-postgres}
