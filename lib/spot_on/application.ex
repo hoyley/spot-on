@@ -36,7 +36,8 @@ defmodule SpotOn.Application do
   def get_spotify_workers() do
     case @enable_spotify_workers do
       true -> [ SpotOn.Gen.FollowerSupervisor,
-                SpotOn.Gen.Initializer ]
+                SpotOn.Gen.Initializer,
+                SpotOn.Gen.DbWorker ]
       false -> []
     end
   end

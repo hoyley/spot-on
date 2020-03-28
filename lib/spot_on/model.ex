@@ -92,12 +92,22 @@ defmodule SpotOn.Model do
     |> Repo.update()
   end
 
+  def update_user_last_login(nil), do: nil
+
   def update_user_last_login(%User{} = user) do
     update_user_last_login(user, DateTime.utc_now())
   end
 
   def update_user_last_login(%User{} = user, last_login = %DateTime{}) do
     update_user(user, %{last_login: last_login})
+  end
+
+  def update_user_last_spotify_activity(%User{} = user) do
+    update_user_last_spotify_activity(user, DateTime.utc_now())
+  end
+
+  def update_user_last_spotify_activity(%User{} = user, last_spotify_activity = %DateTime{}) do
+    update_user(user, %{last_spotify_activity: last_spotify_activity})
   end
 
   @doc """
@@ -158,7 +168,7 @@ defmodule SpotOn.Model do
       ** (Ecto.NoResultsError)
 
   """
-  def get_follow!(id), do: Repo.get!(Follow, id)
+  def get_follow!(id), do: Repo.get!(Follow, id) |> Repo.preload([:leader_user, :follower_user])
 
   def get_follow(leader_name, follower_name) do
     query = from f in Follow,

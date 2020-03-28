@@ -4,7 +4,9 @@ defmodule SpotOnWeb.UserLastActivity do
 
   def render(assigns) do
     ~L"""
-      <div class="card-subtitle text-gray"><%= @last_activity %></div>
+      <div class="card-subtitle text-gray h6 text-normal text-ellipsis">
+        <%= @last_activity %>
+      </div>
     """
   end
 
@@ -15,12 +17,19 @@ defmodule SpotOnWeb.UserLastActivity do
   end
 
   def last_activity(user = %User{}) do
-    minute_difference = trunc(DateTime.diff(DateTime.utc_now(), user.last_login, :second) / 60)
+    login_activity = how_long_ago(user.last_login)
+    spotify_activity = how_long_ago(user.last_spotify_activity)
+
+    "Logged in #{login_activity}. Spotify active #{spotify_activity}."
+  end
+
+  def how_long_ago(date) do
+    minute_difference = trunc(DateTime.diff(DateTime.utc_now(), date, :second) / 60)
     hour_difference = trunc(minute_difference / 60)
     day_difference = trunc(hour_difference / 24)
 
     cond do
-      minute_difference <= 5 -> "Currently active"
+      minute_difference <= 5 -> "currently"
       minute_difference < 60 -> "#{minute_difference} minutes ago"
       hour_difference == 1 -> "#{hour_difference} hour ago"
       hour_difference < 24 -> "#{hour_difference} hours ago"

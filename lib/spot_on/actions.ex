@@ -36,8 +36,14 @@ defmodule SpotOn.Actions do
 
     leader = Model.get_user_by_name(leader_name)
     follower = Model.get_user_by_name(follower_name)
-    Model.create_follow(%{leader_user_id: leader.id, follower_user_id: follower.id})
+    {:ok, follow} = Model.create_follow(%{leader_user_id: leader.id, follower_user_id: follower.id})
+    follow
+    |> Map.get(:id)
+    |> Model.get_follow!
+    |> SpotOn.PubSub.publish_follow_update
+
     FollowerSupervisor.start_follow(leader_name, follower_name)
+
     %{follower_name: follower_name, leader_name: leader_name, credentials: creds}
   end
 
@@ -46,15 +52,11 @@ defmodule SpotOn.Actions do
     follower_name = profile.id
 
     follow = Model.get_follow(leader_name, follower_name)
-    follow && Model.delete_follow(follow)
+    follow && Model.delete_follow(follow) && SpotOn.PubSub.publish_follow_update(follow)
 
     FollowerSupervisor.stop_follow(leader_name, follower_name)
-    %{follower_name: follower_name, leader_name: leader_name, credentials: creds}
-  end
 
-  def get_follow_map() do
-    Model.list_follows() |> Enum.reduce(%{}, fn (follows, map) ->
-      Map.put(map, follows.follower_user.name, follows.leader_user.name)
-    end)
+
+    %{follower_name: follower_name, leader_name: leader_name, credentials: creds}
   end
 end

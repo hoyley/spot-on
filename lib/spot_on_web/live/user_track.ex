@@ -14,8 +14,10 @@ defmodule SpotOnWeb.UserTrack do
     "spotify_refresh_token" => spotify_refresh_token},
     socket) do
 
-    Phoenix.PubSub.subscribe(:spot_on, "playing_track_update:#{user_name}")
-    Phoenix.PubSub.subscribe(:spot_on, "live_user_track_follow_update:#{user_name}")
+    SpotOn.PubSub.subscribe_playing_track_update_by_user_name(user_name)
+    SpotOn.PubSub.subscribe_follow_update_leader(user_name)
+    SpotOn.PubSub.subscribe_follow_update_follower(user_name)
+    SpotOn.PubSub.subscribe_user_update(user_name)
 
     {:ok, socket
     |> assign(:playing_track, PlayingTrackSync.get(user_name))
@@ -23,17 +25,13 @@ defmodule SpotOnWeb.UserTrack do
     |> assign_follows(user_name, logged_in_user_name)}
   end
 
-  def handle_info({:update_playing_track, track}, socket) do
+  def handle_info({:update_playing_track, _user_name, track}, socket) do
     {:noreply, assign(socket, :playing_track, track)}
   end
 
-  def handle_info({:follow_update, publisher_pid}, socket) when publisher_pid == self() do
-    {:noreply, socket}
-  end
-
-  def handle_info({:follow_update, _publisher_pid}, socket) do
-    {:noreply, assign_follows(socket)}
-  end
+  def handle_info({:follow_update_leader, _}, socket), do: {:noreply, assign_follows(socket)}
+  def handle_info({:follow_update_follower, _}, socket), do: {:noreply, assign_follows(socket)}
+  def handle_info({:user_update, _}, socket), do: {:noreply, assign_follows(socket)}
 
   def handle_info({:follow, leader_name}, socket = %{assigns: %{spotify_credentials: creds = %Credentials{}}}), do:
     do_follow(socket, leader_name, creds)
@@ -72,26 +70,21 @@ defmodule SpotOnWeb.UserTrack do
   end
 
   defp do_follow(socket, leader_name, creds = %Credentials{}) do
-    follow = Actions.start_follow(creds, leader_name)
-    publish_follow_update(follow.follower_name)
-    publish_follow_update(follow.leader_name)
+    %{credentials: new_creds} = Actions.start_follow(creds, leader_name)
+
     {:noreply, socket
       |> assign_follows
-      |> assign(:spotify_credentials, creds)
+      |> assign(:spotify_credentials, new_creds)
     }
   end
 
   defp do_unfollow(socket, leader_name, creds = %Credentials{}) do
-    follow = Actions.stop_follow(creds, leader_name)
-    publish_follow_update(follow.follower_name)
-    publish_follow_update(follow.leader_name)
+    %{credentials: new_creds} = Actions.stop_follow(creds, leader_name)
+
     {:noreply, socket
       |> assign_follows
-      |> assign(:spotify_credentials, creds)
+      |> assign(:spotify_credentials, new_creds)
     }
   end
 
-  defp publish_follow_update(leader_name) do
-    Phoenix.PubSub.broadcast(:spot_on, "live_user_track_follow_update:#{leader_name}", {:follow_update, self()})
-  end
 end

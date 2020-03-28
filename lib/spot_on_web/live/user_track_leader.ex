@@ -29,9 +29,11 @@ defmodule SpotOnWeb.UserTrackLeader do
     {:ok, new_socket}
   end
 
+  def handle_event("unfollow", _params, socket = %{assigns: %{leader: nil}}), do:
+    {:noreply, socket}
+
   def handle_event("unfollow", _params, socket = %{assigns: %{leader: %User{name: leader_name}}}) do
     send self(), {:unfollow, leader_name}
-
     {:noreply, socket}
   end
 end

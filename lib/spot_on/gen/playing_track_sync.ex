@@ -112,12 +112,8 @@ defmodule SpotOn.Gen.PlayingTrackSync do
 
   defp publish_changes(old_state = %PlayingTrackSyncState{}, new_state = %PlayingTrackSyncState{}) do
     unless PlayingTrackSyncState.playing_is_approx_same(new_state, old_state) do
-      estimated_track = new_state |> PlayingTrackSyncState.get_estimated_track
-
-      Logger.info '[#{new_state.user_id}] changed playing state.'
-
-      Phoenix.PubSub.broadcast(:spot_on, "playing_track_update:#{new_state.user_id}",
-        {:update_playing_track, estimated_track})
+      track = PlayingTrackSyncState.get_estimated_track(new_state)
+      SpotOn.PubSub.publish_playing_track_update(new_state.user_id, track)
     end
   end
 end
