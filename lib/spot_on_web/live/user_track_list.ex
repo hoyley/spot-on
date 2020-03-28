@@ -15,12 +15,12 @@ defmodule SpotOnWeb.UserTrackList do
     logged_in_user = Model.get_user_by_name(user_name)
     all_users = Actions.get_all_users()
 
-    new_socket = socket
-    |> assign(:spotify_credentials, Credentials.new(access_token, refresh_token))
-    |> assign(:logged_in_user, logged_in_user)
-    |> assign(:users, all_users)
+    Model.update_user_last_login(logged_in_user)
 
-    {:ok, new_socket}
+    {:ok, socket
+          |> assign(:spotify_credentials, Credentials.new(access_token, refresh_token))
+          |> assign(:logged_in_user, logged_in_user)
+          |> assign(:users, all_users)}
   end
 
   def mount(_params, _session, socket) do

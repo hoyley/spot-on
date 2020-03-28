@@ -1,7 +1,7 @@
 <div>
   <div class="card-header">
     <div class="card-title h5"><%= @user.display_name %></div>
-    <div class="card-subtitle text-gray">Spotify User</div>
+    <%= live_component @socket, SpotOnWeb.UserLastActivity, user: @user %>
   </div>
 
   <%= if @playing_track != nil do %><div class="card-body">

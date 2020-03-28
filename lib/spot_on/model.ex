@@ -92,6 +92,14 @@ defmodule SpotOn.Model do
     |> Repo.update()
   end
 
+  def update_user_last_login(%User{} = user) do
+    update_user_last_login(user, DateTime.utc_now())
+  end
+
+  def update_user_last_login(%User{} = user, last_login = %DateTime{}) do
+    update_user(user, %{last_login: last_login})
+  end
+
   @doc """
   Deletes a user.
 
