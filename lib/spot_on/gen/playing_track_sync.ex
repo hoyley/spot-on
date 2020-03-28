@@ -116,8 +116,8 @@ defmodule SpotOn.Gen.PlayingTrackSync do
 
       Logger.info '[#{new_state.user_id}] changed playing state.'
 
-      Phoenix.PubSub.broadcast(:playing_track, "playing_track_update:#{new_state.user_id}",
-        {:update, estimated_track})
+      Phoenix.PubSub.broadcast(:spot_on, "playing_track_update:#{new_state.user_id}",
+        {:update_playing_track, estimated_track})
     end
   end
 end

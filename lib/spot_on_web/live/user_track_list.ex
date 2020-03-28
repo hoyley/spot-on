@@ -4,6 +4,8 @@ defmodule SpotOnWeb.UserTrackList do
   alias SpotOn.Actions
   alias SpotOn.Model
   alias SpotOn.SpotifyApi.Credentials
+  alias SpotOnWeb.Router.Helpers, as: Routes
+  require Logger
 
   def mount(_params, _session = %{
       "logged_in_user_name" => user_name,
@@ -21,8 +23,10 @@ defmodule SpotOnWeb.UserTrackList do
     {:ok, new_socket}
   end
 
-  def mount(_params, _session, _socket) do
-    {:error, "Session not configured"}
+  def mount(_params, _session, socket) do
+    {:ok,  socket
+      |> redirect(to: Routes.page_path(socket, :index))
+    }
   end
 
 end

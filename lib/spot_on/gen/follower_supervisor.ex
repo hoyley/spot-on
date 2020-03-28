@@ -42,6 +42,7 @@ defmodule SpotOn.Gen.FollowerSupervisor do
     |> stop_follow
   end
 
+  def stop_follow(:nil), do: nil
   def stop_follow(:undefined), do: nil
 
   def stop_follow(pid) when is_pid(pid) do

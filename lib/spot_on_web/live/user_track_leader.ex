@@ -1,27 +1,37 @@
 defmodule SpotOnWeb.UserTrackLeader do
   use Phoenix.LiveComponent
   alias SpotOn.Model.User
-  alias SpotOnWeb.Router.Helpers, as: Routes
 
   def render(assigns) do
     ~L"""
-      <%= unless @leader == nil do %>
-        <div>
+      <div>
+        <%= unless @leader == nil do %>
           <%= 'Following #{@leader.display_name}' %>
-          <%= if @user_can_unfollow do %>
-            <a href="<%= Routes.page_path(@socket, :unfollow, follower: @follower.name, leader: @leader.name) %>">Unfollow</a>
+          <%= if @logged_in_user_can_unfollow do %>
+            <button id="<%= @id %>" phx-click="unfollow" phx-target="<%= '##{@id}' %>">Unfollow</button>
           <% end %>
-        </div>
-      <% end %>
+        <% end %>
+      </div>
     """
   end
 
-  def update(%{user: user = %User{}, leader: leader, logged_in_user_name: logged_in_user_name}, socket) do
+  def update(%{
+    id: id,
+    leader: leader,
+    logged_in_user_can_unfollow: logged_in_user_can_unfollow
+  }, socket) do
+
     new_socket = socket
     |> assign(:leader, leader)
-    |> assign(:follower, user)
-    |> assign(:user_can_unfollow, logged_in_user_name === user.name)
+    |> assign(:logged_in_user_can_unfollow, logged_in_user_can_unfollow)
+    |> assign(:id, id)
 
     {:ok, new_socket}
+  end
+
+  def handle_event("unfollow", _params, socket = %{assigns: %{leader: %User{name: leader_name}}}) do
+    send self(), {:unfollow, leader_name}
+
+    {:noreply, socket}
   end
 end

@@ -1,33 +1,35 @@
 defmodule SpotOnWeb.UserTrackFollower do
   use Phoenix.LiveComponent
   alias SpotOn.Model.User
-  alias SpotOnWeb.Router.Helpers, as: Routes
+  require Logger
 
   def render(assigns) do
     ~L"""
-    <%= if @logged_in_user_can_follow do %>
-      <a href="<%= Routes.page_path(@socket, :follow, leader: @leader_name) %>">Follow</a>
-    <% end %>
+    <div>
+      <%= if @logged_in_user_can_follow do %>
+        <button id="<%= @id %>" phx-click="follow" phx-target="<%= '##{@id}' %>">Follow</button>
+      <% end %>
+    </div>
     """
   end
 
-  def update(%{potential_leader: potential_leader = %User{}, current_leader: nil,
-    logged_in_user_name: logged_in_user_name}, socket) do
+  def update(%{
+      id: id,
+      logged_in_user_can_follow: logged_in_user_can_follow,
+      user: user = %User{}}, socket
+  ) do
     {:ok, socket
-        |> assign(:logged_in_user_can_follow, logged_in_user_can_follow(logged_in_user_name, potential_leader))
-        |> assign(:leader_name, potential_leader.name)
+        |> assign(:logged_in_user_can_follow, logged_in_user_can_follow)
+        |> assign(:id, id)
+        |> assign(:user, user)
     }
   end
 
-  def update(%{potential_leader: potential_leader = %User{}, current_leader: %User{}}, socket) do
-    {:ok, socket
-          |> assign(:logged_in_user_can_follow, false)
-          |> assign(:leader_name, potential_leader.name)
-    }
-  end
+  def handle_event("follow", _params,
+        socket = %{assigns: %{user: %User{name: user_name}}}) do
+    send self(), {:follow, user_name}
 
-  def logged_in_user_can_follow(logged_in_user_name, potential_leader) do
-    logged_in_user_name !== potential_leader.name
+    {:noreply, socket}
   end
 
 end

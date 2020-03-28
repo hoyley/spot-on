@@ -10,10 +10,10 @@
 
   <div class="card-footer">
     <div class="card-subtitle text-gray">
-      <%= live_component @socket, SpotOnWeb.UserTrackLeader, logged_in_user_name: @logged_in_user_name,
-          user: @user, leader: @leader %>
-      <%= live_component @socket, SpotOnWeb.UserTrackFollower, logged_in_user_name: @logged_in_user_name,
-          potential_leader: @user, current_leader: @logged_in_user_leader %>
+      <%= live_component @socket, SpotOnWeb.UserTrackLeader, id: "user_track_leader-#{@user.name}",
+          logged_in_user_can_unfollow: @logged_in_user_can_unfollow, leader: @leader %>
+      <%= live_component @socket, SpotOnWeb.UserTrackFollower, id: "user_track_follower-#{@user.name}",
+          logged_in_user_can_follow: @logged_in_user_can_follow, user: @user %>
     </div>
   </div>
 </div>

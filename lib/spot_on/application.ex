@@ -16,7 +16,7 @@ defmodule SpotOn.Application do
       SpotOnWeb.Endpoint,
       %{
         id: Phoenix.PubSub.PG2,
-        start: {Phoenix.PubSub.PG2, :start_link, [:playing_track, []]}
+        start: {Phoenix.PubSub.PG2, :start_link, [:spot_on, []]}
       }
     ] ++ get_spotify_workers()
 

@@ -17,9 +17,11 @@ defmodule SpotOnWeb.PageController do
     |> put_session("logged_in_user_name", Actions.get_my_user(new_credentials).name)
     |> put_session("spotify_access_token", new_credentials.access_token)
     |> put_session("spotify_refresh_token", new_credentials.refresh_token)
-    # |> redirect(to: "/live_view")
 
-    render(new_conn, "index.html", build_index_data(new_conn))
+    # To show live view
+    redirect(new_conn, to: "/live_view")
+    # To show standard Phoenix
+    # render(new_conn, "index.html", build_index_data(new_conn))
   end
 
   def index(conn = %Plug.Conn{req_cookies: %{"spotify_access_token" => _, "spotify_refresh_token" => _}}, _params) do

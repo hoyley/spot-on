@@ -5,10 +5,12 @@
       <%= for user <- @users do %>
         <div class="column col-6 col-sm-12">
           <div class="card text-ellipsis">
-          <%= live_render @socket, SpotOnWeb.UserTrack, id: user.name, user: user,
+          <%= live_render @socket, SpotOnWeb.UserTrack, id: 'user_track-#{user.name}', user: user,
               session: %{
                 "logged_in_user_name" => @logged_in_user.name,
-                "user_name" => user.name} %>
+                "user_name" => user.name,
+                "spotify_access_token" => @spotify_credentials.access_token,
+                "spotify_refresh_token" => @spotify_credentials.refresh_token} %>
                 </div>
         </div>
       <% end %>
