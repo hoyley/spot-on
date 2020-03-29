@@ -12,5 +12,4 @@ defmodule SpotOn.Gen.Initializer do
 
     {:ok, state}
   end
-
 end

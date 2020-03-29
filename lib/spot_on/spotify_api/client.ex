@@ -1,7 +1,6 @@
 # This file has been copied and modified from [https://github.com/jsncmgs1/spotify_ex].
 # The repository is not used as a library because it doesn't support mocking of the API level.
 defmodule SpotOn.SpotifyApi.ClientBehavior do
-
   @moduledoc false
   @callback get(Any.t(), String.t()) :: tuple()
   @callback put(Any.t(), String.t()) :: tuple()
@@ -19,7 +18,7 @@ defmodule SpotOn.SpotifyApi.Client do
 
   def get(conn_or_creds, url) do
     api_client().get(conn_or_creds, url)
-      |> log(url)
+    |> log(url)
   end
 
   def put(conn_or_creds, url, body \\ "") do

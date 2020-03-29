@@ -15,6 +15,8 @@ defmodule SpotOn.Model.Follow do
     follow
     |> cast(attrs, [:leader_user_id, :follower_user_id])
     |> validate_required([:leader_user_id, :follower_user_id])
-    |> unique_constraint(:unique_constraint_leader_follower, name: :unique_leader_follower)
+    |> unique_constraint(:unique_constraint_leader_follower,
+      name: :unique_leader_follower
+    )
   end
 end

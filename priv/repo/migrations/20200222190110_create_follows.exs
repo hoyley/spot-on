@@ -11,6 +11,9 @@ defmodule SpotOn.Repo.Migrations.CreateFollows do
 
     create index(:spotify_follows, [:leader_user_id])
     create index(:spotify_follows, [:follower_user_id])
-    create unique_index(:spotify_follows, [:leader_user_id, :follower_user_id], name: :unique_leader_follower)
+
+    create unique_index(:spotify_follows, [:leader_user_id, :follower_user_id],
+             name: :unique_leader_follower
+           )
   end
 end

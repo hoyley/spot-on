@@ -4,8 +4,8 @@ defmodule SpotOn.SpotifyApi.Player do
 
   def current_track(conn) do
     conn
-      |> Client.get(current_track_url())
-      |> handle_response
+    |> Client.get(current_track_url())
+    |> handle_response
   end
 
   def play(conn, params) do

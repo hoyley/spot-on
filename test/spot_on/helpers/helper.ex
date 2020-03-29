@@ -1,18 +1,18 @@
 defmodule SpotOn.Helpers.Helper do
-
   alias SpotOn.SpotifyApi.PlayingTrack
   import SpotOn.Helpers.Defaults
 
   defmacro __using__(_) do
     quote do
       def to_json(nil), do: ""
+
       def to_json(playing_track = %PlayingTrack{}) do
         to_map(playing_track)
         |> to_json
       end
 
       def to_json(map = %{}) do
-        map |> Poison.encode!
+        map |> Poison.encode!()
       end
 
       def to_map(playing_track = %PlayingTrack{}) do
@@ -38,20 +38,21 @@ defmodule SpotOn.Helpers.Helper do
       end
 
       def to_map(json) do
-        json |> Poison.decode
+        json |> Poison.decode()
       end
 
       def update(track = %PlayingTrack{}, attrs \\ %{}) do
-        track_map = track
-        |> to_map
-        |> deep_merge(attrs)
+        track_map =
+          track
+          |> to_map
+          |> deep_merge(attrs)
 
         PlayingTrack.new(track.user_name, track_map)
       end
 
       def add_artist(playing_track = %{}, artist_name) do
         playing_track
-        |> update_in([:item, :artists], &(&1 ++ [%{ name: artist_name}]))
+        |> update_in([:item, :artists], &(&1 ++ [%{name: artist_name}]))
       end
 
       def assert_equals(track1 = %PlayingTrack{}, track2 = %PlayingTrack{}) do
@@ -82,7 +83,11 @@ defmodule SpotOn.Helpers.Helper do
         |> Map.put(:is_playing, false)
       end
 
-      def new_playing_track(%{user_name: user_name, song_uri: song_uri, progress_ms: progress_ms}) do
+      def new_playing_track(%{
+            user_name: user_name,
+            song_uri: song_uri,
+            progress_ms: progress_ms
+          }) do
         default_playing_track()
         |> Map.put(:user_name, user_name)
         |> Map.put(:is_playing, true)
@@ -90,8 +95,13 @@ defmodule SpotOn.Helpers.Helper do
         |> put_in([Access.key(:track), Access.key(:song_uri)], song_uri)
       end
 
-      def new_playing_track(%{user_name: user_name, song_uri: song_uri}), do:
-        new_playing_track(%{user_name: user_name, song_uri: song_uri, progress_ms: default_playing_progress_ms()})
+      def new_playing_track(%{user_name: user_name, song_uri: song_uri}),
+        do:
+          new_playing_track(%{
+            user_name: user_name,
+            song_uri: song_uri,
+            progress_ms: default_playing_progress_ms()
+          })
 
       def new_playing_track(user_name) do
         default_playing_track()

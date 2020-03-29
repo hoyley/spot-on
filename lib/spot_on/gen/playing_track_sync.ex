@@ -17,7 +17,9 @@ defmodule SpotOn.Gen.PlayingTrackSync do
   end
 
   def start_link(user_id, creds = %Credentials{}) do
-    GenServer.start_link(__MODULE__, PlayingTrackSyncState.new(user_id, creds), name: {:global, user_id})
+    GenServer.start_link(__MODULE__, PlayingTrackSyncState.new(user_id, creds),
+      name: {:global, user_id}
+    )
   end
 
   def get_sync_state(user_id) do
@@ -32,7 +34,7 @@ defmodule SpotOn.Gen.PlayingTrackSync do
 
   @impl true
   def init(state = %PlayingTrackSyncState{}) do
-    Logger.info 'Syncing the currently playing track for [#{state.user_id}]'
+    Logger.info('Syncing the currently playing track for [#{state.user_id}]')
     refresh_state(state, :ok)
   end
 
@@ -47,7 +49,7 @@ defmodule SpotOn.Gen.PlayingTrackSync do
   end
 
   def handle_info({:EXIT, _pid, _reason}, state = %PlayingTrackSyncState{}) do
-    Logger.info 'Stopped syncing the currently playing track for [#{state.user_id}]'
+    Logger.info('Stopped syncing the currently playing track for [#{state.user_id}]')
   end
 
   def stop_sync(:undefined), do: nil
@@ -74,26 +76,34 @@ defmodule SpotOn.Gen.PlayingTrackSync do
       schedule_get(new_state)
       {response_token, new_state}
     rescue
-      error -> Logger.error Exception.format(:error, error, __STACKTRACE__)
-               raise error
+      error ->
+        Logger.error(Exception.format(:error, error, __STACKTRACE__))
+        raise error
     end
   end
 
-  defp schedule_get(%PlayingTrackSyncState{playing_track: %PlayingTrack{progress_ms: progress, track:
-      %Track{duration_ms: duration}}}) do
+  defp schedule_get(%PlayingTrackSyncState{
+         playing_track: %PlayingTrack{
+           progress_ms: progress,
+           track: %Track{duration_ms: duration}
+         }
+       }) do
     min(duration - progress, @refetch_milli_delay)
     |> schedule_get
   end
 
-  defp schedule_get(%PlayingTrackSyncState{}), do: schedule_get(@refetch_milli_delay)
+  defp schedule_get(%PlayingTrackSyncState{}),
+    do: schedule_get(@refetch_milli_delay)
 
   defp schedule_get(delay) do
     Process.send_after(self(), :get, delay)
   end
 
   defp get_playing_track(state = %PlayingTrackSyncState{credentials: nil}) do
-    credentials = Model.get_user_token_by_user_name(state.user_id)
-    |> Credentials.new
+    credentials =
+      Model.get_user_token_by_user_name(state.user_id)
+      |> Credentials.new()
+
     new_state = %{state | credentials: credentials}
 
     get_playing_track(new_state)
@@ -108,10 +118,18 @@ defmodule SpotOn.Gen.PlayingTrackSync do
     total_millis = micros / 1000
     estimated_one_way_millis = total_millis / 2
 
-    PlayingTrackSyncState.new(state.user_id, success.credentials, success.result, estimated_one_way_millis)
+    PlayingTrackSyncState.new(
+      state.user_id,
+      success.credentials,
+      success.result,
+      estimated_one_way_millis
+    )
   end
 
-  defp publish_changes(old_state = %PlayingTrackSyncState{}, new_state = %PlayingTrackSyncState{}) do
+  defp publish_changes(
+         old_state = %PlayingTrackSyncState{},
+         new_state = %PlayingTrackSyncState{}
+       ) do
     unless playing_is_approx_same(new_state, old_state) do
       track = get_estimated_track(new_state)
       SpotOn.PubSub.publish_playing_track_update(new_state.user_id, track)

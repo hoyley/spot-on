@@ -16,7 +16,8 @@ defmodule SpotOn.Gen.FollowerSupervisor do
   end
 
   def start_all_follows() do
-    Model.list_follows() |> Enum.each(fn follow ->
+    Model.list_follows()
+    |> Enum.each(fn follow ->
       start_follow(follow.leader_user.name, follow.follower_user.name)
     end)
   end
@@ -32,7 +33,8 @@ defmodule SpotOn.Gen.FollowerSupervisor do
   end
 
   def stop_all_follows() do
-    Model.list_follows() |> Enum.each(fn follow ->
+    Model.list_follows()
+    |> Enum.each(fn follow ->
       stop_follow(follow.leader_user.name, follow.follower_user.name)
     end)
   end
@@ -42,11 +44,10 @@ defmodule SpotOn.Gen.FollowerSupervisor do
     |> stop_follow
   end
 
-  def stop_follow(:nil), do: nil
+  def stop_follow(nil), do: nil
   def stop_follow(:undefined), do: nil
 
   def stop_follow(pid) when is_pid(pid) do
     DynamicSupervisor.terminate_child(__MODULE__, pid)
   end
-
 end

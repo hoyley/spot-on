@@ -9,16 +9,17 @@ defmodule SpotOn.Application do
 
   def start(_type, _args) do
     # List all child processes to be supervised
-    children = [
-      # Start the Ecto repository
-      SpotOn.Repo,
-      # Start the endpoint when the application starts
-      SpotOnWeb.Endpoint,
-      %{
-        id: Phoenix.PubSub.PG2,
-        start: {Phoenix.PubSub.PG2, :start_link, [:spot_on, []]}
-      }
-    ] ++ get_spotify_workers()
+    children =
+      [
+        # Start the Ecto repository
+        SpotOn.Repo,
+        # Start the endpoint when the application starts
+        SpotOnWeb.Endpoint,
+        %{
+          id: Phoenix.PubSub.PG2,
+          start: {Phoenix.PubSub.PG2, :start_link, [:spot_on, []]}
+        }
+      ] ++ get_spotify_workers()
 
     # See https://hexdocs.pm/elixir/Supervisor.html
     # for other strategies and supported options
@@ -35,10 +36,15 @@ defmodule SpotOn.Application do
 
   def get_spotify_workers() do
     case @enable_spotify_workers do
-      true -> [ SpotOn.Gen.FollowerSupervisor,
-                SpotOn.Gen.Initializer,
-                SpotOn.Gen.DbWorker ]
-      false -> []
+      true ->
+        [
+          SpotOn.Gen.FollowerSupervisor,
+          SpotOn.Gen.Initializer,
+          SpotOn.Gen.DbWorker
+        ]
+
+      false ->
+        []
     end
   end
 end

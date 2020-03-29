@@ -36,8 +36,10 @@ defmodule SpotOnWeb.ConnCase do
       Ecto.Adapters.SQL.Sandbox.mode(SpotOn.Repo, {:shared, self()})
     end
 
-    conn = Phoenix.ConnTest.build_conn()
+    conn =
+      Phoenix.ConnTest.build_conn()
       |> init_test_session(%{})
+
     {:ok, conn: conn}
   end
 end
