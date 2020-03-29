@@ -17,9 +17,11 @@ defmodule SpotOnWeb.PlayingTrack do
       |> String.pad_leading(2, "0")
 
     progress = "#{minutes}:#{seconds_remainder_string}"
+    percentage_progress = trunc(track.progress_ms / track.track.duration_ms * 100)
 
     socket
     |> assign(:progress, progress)
+    |> assign(:percentage_progress, percentage_progress)
   end
 
   def assign_progress(_), do: nil

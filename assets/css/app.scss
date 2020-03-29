@@ -1,4 +1,5 @@
-@import "live_view.css";
+@import "live_view.scss";
+@import "radial_progress.scss";
 
 body {
     font-family: Gotham Rounded A,Gotham Rounded B,Helvetica Neue,Arial,sans-serif;
@@ -29,4 +30,22 @@ h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5 {
 
 .card-subtitle {
   font-size: 12px;
+}
+
+.avatar {
+  background: transparent;
+}
+
+.playing-track-icon-container {
+  position:relative;
+}
+
+.playing-track-icon-element {
+  position: absolute;
+  left: 0px;
+  top: 0px
+}
+
+.playing-track-icon-image {
+  padding: 3px;
 }
