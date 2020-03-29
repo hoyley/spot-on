@@ -2,9 +2,9 @@ defmodule SpotOn.Gen.PlayingTrackFollower do
   use GenServer
   alias SpotOn.Gen.PlayingTrackFollower
   alias SpotOn.Gen.PlayingTrackSync
-  alias SpotOn.Gen.PlayingTrackSyncState
   alias SpotOn.SpotifyApi.PlayingTrack
   alias SpotOn.SpotifyApi.Api
+  import SpotOn.Helpers.EstimatedTrack
   require Logger
 
   @refresh_delay_ms Application.get_env(:spot_on, :follower_poll_ms)
@@ -79,8 +79,8 @@ defmodule SpotOn.Gen.PlayingTrackFollower do
   defp refresh(state = %PlayingTrackFollower{}) do
     leader_track = PlayingTrackSync.get_sync_state(state.leader_name)
     follower_track = PlayingTrackSync.get_sync_state(state.follower_name)
-    leader_track_estimated = leader_track |> PlayingTrackSyncState.get_estimated_track
-    follower_track_estimated = follower_track |> PlayingTrackSyncState.get_estimated_track
+    leader_track_estimated = leader_track |> get_estimated_track
+    follower_track_estimated = follower_track |> get_estimated_track
 
     refresh(leader_track_estimated, follower_track_estimated, state)
   end

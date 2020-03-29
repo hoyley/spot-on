@@ -7,6 +7,7 @@ defmodule SpotOn.Gen.PlayingTrackSync do
   alias SpotOn.SpotifyApi.Credentials
   alias SpotOn.SpotifyApi.PlayingTrack
   alias SpotOn.SpotifyApi.Track
+  import SpotOn.Helpers.EstimatedTrack
   require Logger
 
   @refetch_milli_delay Application.get_env(:spot_on, :playing_track_poll_ms)
@@ -111,8 +112,8 @@ defmodule SpotOn.Gen.PlayingTrackSync do
   end
 
   defp publish_changes(old_state = %PlayingTrackSyncState{}, new_state = %PlayingTrackSyncState{}) do
-    unless PlayingTrackSyncState.playing_is_approx_same(new_state, old_state) do
-      track = PlayingTrackSyncState.get_estimated_track(new_state)
+    unless playing_is_approx_same(new_state, old_state) do
+      track = get_estimated_track(new_state)
       SpotOn.PubSub.publish_playing_track_update(new_state.user_id, track)
     end
   end

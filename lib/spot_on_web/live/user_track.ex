@@ -1,11 +1,15 @@
 defmodule SpotOnWeb.UserTrack do
   use Phoenix.LiveView
   alias SpotOn.SpotifyApi.Credentials
+  alias SpotOn.SpotifyApi.PlayingTrack
   alias SpotOn.Model.User
   alias SpotOn.Model
   alias SpotOn.Actions
   alias SpotOn.Gen.PlayingTrackSync
+  import SpotOn.Helpers.EstimatedTrack
   require Logger
+
+  @playing_track_progress_tick_ms 1000
 
   def mount(_params, %{
     "user_name" => user_name,
@@ -20,18 +24,19 @@ defmodule SpotOnWeb.UserTrack do
     SpotOn.PubSub.subscribe_user_update(user_name)
 
     {:ok, socket
-    |> assign(:playing_track, PlayingTrackSync.get(user_name))
+    |> assign_playing_track(PlayingTrackSync.get(user_name))
     |> assign(:spotify_credentials, Credentials.new(spotify_access_token, spotify_refresh_token))
     |> assign_follows(user_name, logged_in_user_name)}
   end
 
   def handle_info({:update_playing_track, _user_name, track}, socket) do
-    {:noreply, assign(socket, :playing_track, track)}
+    {:noreply, socket |> assign_playing_track(track)}
   end
 
   def handle_info({:follow_update_leader, _}, socket), do: {:noreply, assign_follows(socket)}
   def handle_info({:follow_update_follower, _}, socket), do: {:noreply, assign_follows(socket)}
   def handle_info({:user_update, _}, socket), do: {:noreply, assign_follows(socket)}
+  def handle_info(:playing_track_progress_tick, socket), do: {:noreply, socket |> assign_playing_track}
 
   def handle_info({:follow, leader_name}, socket = %{assigns: %{spotify_credentials: creds = %Credentials{}}}), do:
     do_follow(socket, leader_name, creds)
@@ -68,6 +73,30 @@ defmodule SpotOnWeb.UserTrack do
     |> assign(:logged_in_user_can_follow, logged_in_user_can_follow)
     |> assign(:logged_in_user_can_unfollow, logged_in_user_can_unfollow)
   end
+
+  def assign_playing_track(socket, track = %PlayingTrack{}), do:
+    assign_playing_track(socket, track, DateTime.utc_now())
+
+  def assign_playing_track(socket, nil), do:
+    socket
+    |> assign(:playing_track, nil)
+    |> assign(:estimated_track, nil)
+    |> assign(:playing_track_updated, nil)
+
+  def assign_playing_track(socket, track = %PlayingTrack{}, last_updated = %DateTime{}) do
+    estimated_track = track && get_estimated_track(track, last_updated)
+
+    estimated_track && estimated_track.is_playing
+    && Process.send_after(self(), :playing_track_progress_tick, @playing_track_progress_tick_ms)
+
+    socket
+    |> assign(:playing_track, track)
+    |> assign(:estimated_track, estimated_track)
+    |> assign(:playing_track_updated, last_updated)
+  end
+
+  def assign_playing_track(socket = %{assigns: %{playing_track: track, playing_track_updated: updated_at}}),
+    do: assign_playing_track(socket, track, updated_at)
 
   defp do_follow(socket, leader_name, creds = %Credentials{}) do
     %{credentials: new_creds} = Actions.start_follow(creds, leader_name)

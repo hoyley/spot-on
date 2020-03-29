@@ -4,8 +4,8 @@
     <%= live_component @socket, SpotOnWeb.UserLastActivity, user: @user %>
   </div>
 
-  <%= if @playing_track != nil do %><div class="card-body">
-    <%= live_component @socket, SpotOnWeb.PlayingTrack, playing_track: @playing_track %>
+  <%= if @estimated_track != nil do %><div class="card-body">
+    <%= live_component @socket, SpotOnWeb.PlayingTrack, playing_track: @estimated_track %>
   </div><% end %>
 
   <div class="card-footer">
