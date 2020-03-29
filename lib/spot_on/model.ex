@@ -39,8 +39,10 @@ defmodule SpotOn.Model do
   def get_user!(id), do: Repo.get!(User, id)
 
   def get_user_by_name(name) do
-    query = from u in User,
-            where: u.name == ^name
+    query =
+      from u in User,
+        where: u.name == ^name
+
     Repo.one(query)
   end
 
@@ -57,6 +59,7 @@ defmodule SpotOn.Model do
 
   """
   def create_user(nil), do: create_user(%{})
+
   def create_user(attrs = %{}) when is_map(attrs) do
     %User{}
     |> User.changeset(attrs)
@@ -106,7 +109,10 @@ defmodule SpotOn.Model do
     update_user_last_spotify_activity(user, DateTime.utc_now())
   end
 
-  def update_user_last_spotify_activity(%User{} = user, last_spotify_activity = %DateTime{}) do
+  def update_user_last_spotify_activity(
+        %User{} = user,
+        last_spotify_activity = %DateTime{}
+      ) do
     update_user(user, %{last_spotify_activity: last_spotify_activity})
   end
 
@@ -168,21 +174,27 @@ defmodule SpotOn.Model do
       ** (Ecto.NoResultsError)
 
   """
-  def get_follow!(id), do: Repo.get!(Follow, id) |> Repo.preload([:leader_user, :follower_user])
+  def get_follow!(id),
+    do: Repo.get!(Follow, id) |> Repo.preload([:leader_user, :follower_user])
 
   def get_follow(leader_name, follower_name) do
-    query = from f in Follow,
-            join: lu in User, on: f.leader_user_id == lu.id,
-            join: fu in User, on: f.follower_user_id == fu.id,
-            where: lu.name == ^leader_name and fu.name == ^follower_name
+    query =
+      from f in Follow,
+        join: lu in User,
+        on: f.leader_user_id == lu.id,
+        join: fu in User,
+        on: f.follower_user_id == fu.id,
+        where: lu.name == ^leader_name and fu.name == ^follower_name
 
     Repo.one(query) |> Repo.preload([:leader_user, :follower_user])
   end
 
   def get_follow_by_follower_name(follower_name) do
-    query = from f in Follow,
-                 join: fu in User, on: f.follower_user_id == fu.id,
-                 where: fu.name == ^follower_name
+    query =
+      from f in Follow,
+        join: fu in User,
+        on: f.follower_user_id == fu.id,
+        where: fu.name == ^follower_name
 
     Repo.one(query) |> Repo.preload([:leader_user, :follower_user])
   end
@@ -282,8 +294,10 @@ defmodule SpotOn.Model do
   def get_user_tokens!(id), do: Repo.get!(UserTokens, id)
 
   def get_user_token(user = %User{}) do
-    query = from ut in UserTokens,
-              where: ut.user_id == ^user.id
+    query =
+      from ut in UserTokens,
+        where: ut.user_id == ^user.id
+
     Repo.one(query)
   end
 
@@ -302,9 +316,10 @@ defmodule SpotOn.Model do
   end
 
   def create_or_update_user_tokens(user = %User{id: id}, creds = %Credentials{}) do
-    change = creds
+    change =
+      creds
       |> Map.put_new(:user_id, id)
-      |> Map.from_struct
+      |> Map.from_struct()
 
     case get_user_token(user) do
       nil -> create_user_tokens(change)
@@ -312,11 +327,13 @@ defmodule SpotOn.Model do
     end
   end
 
-  def create_or_update_user_tokens(spotify_user_name, creds = %Credentials{}) when is_binary(spotify_user_name) do
+  def create_or_update_user_tokens(spotify_user_name, creds = %Credentials{})
+      when is_binary(spotify_user_name) do
     case get_user_by_name(spotify_user_name) do
-      nil  -> create_user(spotify_user_name)
+      nil -> create_user(spotify_user_name)
       user -> user
-    end |> create_or_update_user_tokens(creds)
+    end
+    |> create_or_update_user_tokens(creds)
   end
 
   def create_or_update_user_tokens(spotify_user, conn = %Plug.Conn{}) do
@@ -370,4 +387,3 @@ defmodule SpotOn.Model do
     UserTokens.changeset(user_tokens, %{})
   end
 end
-

@@ -28,11 +28,12 @@ defmodule SpotOnWeb do
   end
 
   def view(opts \\ [root: "lib/spot_on_web/templates", namespace: SpotOnWeb]) do
-      quote do
+    quote do
       use Phoenix.View, unquote(opts)
 
       # Import convenience functions from controllers
-      import Phoenix.Controller, only: [get_flash: 1, get_flash: 2, view_module: 1]
+      import Phoenix.Controller,
+        only: [get_flash: 1, get_flash: 2, view_module: 1]
 
       # Use all HTML functionality (forms, tags, etc)
       use Phoenix.HTML
@@ -67,6 +68,7 @@ defmodule SpotOnWeb do
   defmacro __using__(which) when is_atom(which) do
     apply(__MODULE__, which, [])
   end
+
   defmacro __using__({which, opts}) when is_atom(which) do
     apply(__MODULE__, which, [opts])
   end

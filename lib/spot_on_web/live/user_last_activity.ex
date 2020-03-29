@@ -11,9 +11,10 @@ defmodule SpotOnWeb.UserLastActivity do
   end
 
   def update(%{user: user = %User{}}, socket) do
-    {:ok, socket
-          |> assign(:user, user)
-          |> assign(:last_activity, last_activity(user))}
+    {:ok,
+     socket
+     |> assign(:user, user)
+     |> assign(:last_activity, last_activity(user))}
   end
 
   def last_activity(user = %User{}) do
@@ -25,6 +26,7 @@ defmodule SpotOnWeb.UserLastActivity do
 
   def how_long_ago(date) do
     minute_difference = trunc(DateTime.diff(DateTime.utc_now(), date, :second) / 60)
+
     hour_difference = trunc(minute_difference / 60)
     day_difference = trunc(hour_difference / 24)
 

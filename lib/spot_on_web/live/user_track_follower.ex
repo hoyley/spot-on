@@ -13,23 +13,28 @@ defmodule SpotOnWeb.UserTrackFollower do
     """
   end
 
-  def update(%{
-      id: id,
-      logged_in_user_can_follow: logged_in_user_can_follow,
-      user: user = %User{}}, socket
-  ) do
-    {:ok, socket
-        |> assign(:logged_in_user_can_follow, logged_in_user_can_follow)
-        |> assign(:id, id)
-        |> assign(:user, user)
-    }
+  def update(
+        %{
+          id: id,
+          logged_in_user_can_follow: logged_in_user_can_follow,
+          user: user = %User{}
+        },
+        socket
+      ) do
+    {:ok,
+     socket
+     |> assign(:logged_in_user_can_follow, logged_in_user_can_follow)
+     |> assign(:id, id)
+     |> assign(:user, user)}
   end
 
-  def handle_event("follow", _params,
-        socket = %{assigns: %{user: %User{name: user_name}}}) do
-    send self(), {:follow, user_name}
+  def handle_event(
+        "follow",
+        _params,
+        socket = %{assigns: %{user: %User{name: user_name}}}
+      ) do
+    send(self(), {:follow, user_name})
 
     {:noreply, socket}
   end
-
 end
