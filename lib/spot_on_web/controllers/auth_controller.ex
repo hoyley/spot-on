@@ -5,14 +5,16 @@ defmodule SpotOnWeb.AuthController do
 
   def authenticate(conn, params) do
     case Authentication.authenticate(conn, params) do
-      {:ok, conn } ->
+      {:ok, conn} ->
         # do stuff
-        redirect conn, to: "/"
-      { :error, _reason, conn }-> redirect conn, to: "/error"
+        redirect(conn, to: "/")
+
+      {:error, _reason, conn} ->
+        redirect(conn, to: "/error")
     end
   end
 
   def authorize(conn, _params) do
-    redirect conn, external: Authorization.url
+    redirect(conn, external: Authorization.url())
   end
 end

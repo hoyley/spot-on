@@ -56,7 +56,8 @@ defmodule SpotOn.SpotifyApi.Authentication do
   end
 
   def authenticate(_, _) do
-    raise AuthenticationError, "No code provided by Spotify. Authorize your app again"
+    raise AuthenticationError,
+          "No code provided by Spotify. Authorize your app again"
   end
 
   @doc """

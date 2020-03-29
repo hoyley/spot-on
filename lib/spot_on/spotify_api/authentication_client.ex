@@ -10,7 +10,8 @@ defmodule AuthenticationClient do
   @auth_url "https://accounts.spotify.com/api/token"
 
   def post(params) do
-    with {:ok, %Response{status_code: _code, body: body}} <- Client.authenticate(@auth_url, params),
+    with {:ok, %Response{status_code: _code, body: body}} <-
+           Client.authenticate(@auth_url, params),
          {:ok, response} <- Poison.decode(body) do
       case response do
         %{"error_description" => error} ->
