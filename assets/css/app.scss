@@ -1,3 +1,4 @@
+@import "colors.scss";
 @import "live_view.scss";
 @import "radial_progress.scss";
 
@@ -22,6 +23,7 @@ h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5 {
   border: 0;
   box-shadow: 0 0.25rem 1rem rgba(48,55,66,.15);
   height: 100%;
+  background-color: $card-background-color;
 }
 
 .user-cards .phx-connected {
@@ -36,16 +38,6 @@ h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5 {
   background: transparent;
 }
 
-.playing-track-icon-container {
-  position:relative;
-}
-
-.playing-track-icon-element {
-  position: absolute;
-  left: 0px;
-  top: 0px
-}
-
 .playing-track-icon-image {
-  padding: 3px;
+  padding: 1.5px;
 }

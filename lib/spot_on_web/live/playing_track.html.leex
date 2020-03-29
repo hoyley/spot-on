@@ -1,20 +1,23 @@
+<% paused_class = (@playing_track && !@playing_track.is_playing && "paused") || "" %>
 <div class="tile tile-centered">
   <div class="tile-icon">
-    <i class="icon icon-file centered playing-track-icon-container">
+    <i class="icon icon-file centered">
       <%= unless @playing_track.track.small_image == nil do %><figure class="avatar avatar-xl">
-        <div class="radial-progress playing-track-icon-element" data-progress="<%= @percentage_progress %>">
+        <div class="radial-progress" data-progress="<%= @percentage_progress %>">
           <div class="circle">
             <div class="mask full">
-              <div class="fill"></div>
+              <div class="fill <%= paused_class %>"></div>
             </div>
             <div class="mask half">
-              <div class="fill"></div>
-              <div class="fill fix"></div>
+              <div class="fill <%= paused_class %>"></div>
+              <div class="fill fix <%= paused_class %>"></div>
             </div>
             <div class="shadow"></div>
           </div>
+          <div class="inset">
+            <img class="playing-track-icon-image" src="<%= @playing_track.track.small_image %>">
+          </div>
         </div>
-        <img class="playing-track-icon-element playing-track-icon-image" src="<%= @playing_track.track.small_image %>">
       </figure><% end %>
     </i>
   </div>
