@@ -22,14 +22,13 @@ defmodule SpotOn.SpotifyApi.ApiHelpers do
             allow_refresh \\ false
           ) do
         api_function.(credentials)
-        |> response(credentials)
         |> handle_call_response(api_function, allow_refresh)
       end
 
       defp handle_call_response(result = %ApiSuccess{}, _, _), do: result
 
       defp handle_call_response(
-             failure = %ApiFailure{credentials: credentials},
+             failure = %ApiFailure{credentials: credentials, http_status: 401},
              api_function,
              true
            ) do
@@ -41,6 +40,8 @@ defmodule SpotOn.SpotifyApi.ApiHelpers do
         |> handle_refresh_response(api_function)
       end
 
+      defp handle_call_response(failure = %ApiFailure{}, _api_function, _), do: failure
+
       defp handle_refresh_response(fail = %ApiFailure{}, _), do: fail
 
       defp handle_refresh_response(success = %ApiSuccess{}, api_function),
@@ -49,27 +50,29 @@ defmodule SpotOn.SpotifyApi.ApiHelpers do
       def refresh(credentials = %Credentials{}) do
         Logger.debug("Attempting to refresh connection")
 
-        try do
-          Authentication.refresh(credentials)
-          |> parse_credentials(credentials)
-          |> update_tokens_internal
-        rescue
-          e in AuthenticationError ->
-            ApiFailure.new(e.message, nil, credentials)
+        case Authentication.refresh(credentials) do
+          failure = %ApiFailure{} ->
+            failure
+
+          success = %ApiSuccess{} ->
+            success
+            |> enrich_credentials(credentials)
+            |> Map.get(:credentials)
+            |> update_tokens_internal
         end
       end
 
-      defp parse_credentials(
-             {:ok, partial_creds = %Credentials{}},
+      defp enrich_credentials(
+             success = %ApiSuccess{},
              creds = %Credentials{}
            ) do
-        Credentials.new(partial_creds.access_token, creds.refresh_token)
+        Credentials.new(success.credentials.access_token, creds.refresh_token)
+        |> ApiSuccess.new(success.result)
       end
 
       defp update_tokens_internal(creds = %Credentials{}) do
         creds
         |> Profile.me()
-        |> response(creds)
         |> update_tokens_internal
       end
 
@@ -88,33 +91,6 @@ defmodule SpotOn.SpotifyApi.ApiHelpers do
         Model.create_or_update_user_tokens(user, credentials)
 
         success
-      end
-
-      defp update_tokens_internal(failure = %ApiFailure{}), do: failure
-
-      def response(
-            {:ok,
-             %{
-               "error" => %{
-                 "message" => error_message,
-                 "status" => error_status
-               }
-             }},
-            credentials = %Credentials{}
-          ) do
-        ApiFailure.new(error_message, error_status, credentials)
-      end
-
-      def response({:error, message}, credentials = %Credentials{}) do
-        ApiFailure.new(message, nil, credentials)
-      end
-
-      def response({:ok, response}, credentials = %Credentials{}) do
-        ApiSuccess.new(response, credentials)
-      end
-
-      def response(response, credentials = %Credentials{}) do
-        ApiSuccess.new(response, credentials)
       end
     end
   end

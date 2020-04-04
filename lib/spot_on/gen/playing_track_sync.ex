@@ -4,6 +4,7 @@ defmodule SpotOn.Gen.PlayingTrackSync do
   alias SpotOn.Model
   alias SpotOn.SpotifyApi.Api
   alias SpotOn.SpotifyApi.ApiSuccess
+  alias SpotOn.SpotifyApi.ApiFailure
   alias SpotOn.SpotifyApi.Credentials
   alias SpotOn.SpotifyApi.PlayingTrack
   alias SpotOn.SpotifyApi.Track
@@ -50,6 +51,14 @@ defmodule SpotOn.Gen.PlayingTrackSync do
 
   def handle_info({:EXIT, _pid, _reason}, state = %PlayingTrackSyncState{}) do
     Logger.info('Stopped syncing the currently playing track for [#{state.user_id}]')
+  end
+
+  def handle_info(unknown_message, state = %PlayingTrackSyncState{}) do
+    Logger.error(
+      'Unknown message received by PlayingTrackSync GenServer while syncing track for [#{
+        state.user_id
+      }] -- #{inspect(unknown_message)}'
+    )
   end
 
   def stop_sync(:undefined), do: nil
@@ -113,17 +122,34 @@ defmodule SpotOn.Gen.PlayingTrackSync do
     function_call = fn s -> Api.get_playing_track(s.user_id, s.credentials) end
 
     # We will time the call to estimate the API response time
-    {micros, success = %ApiSuccess{}} = :timer.tc(function_call, [state])
+    {micros, result} = :timer.tc(function_call, [state])
 
     total_millis = micros / 1000
     estimated_one_way_millis = total_millis / 2
 
-    PlayingTrackSyncState.new(
-      state.user_id,
-      success.credentials,
-      success.result,
-      estimated_one_way_millis
-    )
+    case result do
+      failure = %ApiFailure{} ->
+        Logger.error(
+          "Error trying to sync playing track for user [#{state.user_id}]. Status [#{failure.status}], HTTP Status [#{
+            failure.http_status
+          }], Message [#{failure.message}]"
+        )
+
+        PlayingTrackSyncState.new(
+          state.user_id,
+          state.credentials,
+          nil,
+          estimated_one_way_millis
+        )
+
+      %ApiSuccess{result: track, credentials: new_creds} ->
+        PlayingTrackSyncState.new(
+          state.user_id,
+          new_creds,
+          track,
+          estimated_one_way_millis
+        )
+    end
   end
 
   defp publish_changes(

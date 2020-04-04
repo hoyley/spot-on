@@ -11,18 +11,39 @@ defmodule Responder do
   the `build_response/1` function.
   """
 
+  alias SpotOn.SpotifyApi.ApiSuccess
+  alias SpotOn.SpotifyApi.ApiFailure
+  alias SpotOn.SpotifyApi.Credentials
+
   @callback build_response(map) :: any
 
   defmacro __using__(_) do
     quote do
-      def handle_response({:ok, %HTTPoison.Response{status_code: code, body: ""}})
+      def handle_response({message, %HTTPoison.Response{status_code: code, body: body}}, conn)
+          when code in 400..499 do
+        ApiFailure.new(
+          conn |> Credentials.new(),
+          message,
+          :http_error,
+          code,
+          body && Poison.decode!(body)
+        )
+      end
+
+      def handle_response({:ok, %HTTPoison.Response{status_code: code, body: ""}}, conn)
           when code in 200..299,
-          do: :ok
+          do: ApiSuccess.new(conn |> Credentials.new())
+
+      def handle_response({:ok, poison = %HTTPoison.Response{body: body}}, conn) do
+        response = body |> Poison.decode!() |> build_response
+        handle_ok_response(conn |> Credentials.new(), response)
+      end
 
       # special handling for 'too many requests' status
       # in order to know when to retry
       def handle_response(
-            {message, %HTTPoison.Response{status_code: 429, body: body, headers: headers}}
+            {message, %HTTPoison.Response{status_code: 429, headers: headers}},
+            conn
           ) do
         {retry_after, ""} =
           headers
@@ -30,35 +51,43 @@ defmodule Responder do
           |> Kernel.elem(1)
           |> Integer.parse()
 
-        {message, Map.put(Poison.decode!(body), "meta", %{"retry_after" => retry_after})}
+        ApiFailure.new(conn, :rate_limit, retry_after)
       end
 
-      def handle_response({message, %HTTPoison.Response{status_code: code, body: body}})
-          when code in 400..499 do
-        {message, Poison.decode!(body)}
-      end
+      def handle_response({:error, %HTTPoison.Error{id: nil, reason: :enetdown}}, conn),
+        do: ApiFailure.new(conn |> Credentials.new(), :enet_down)
 
-      def handle_response({:ok, poison = %HTTPoison.Response{status_code: _code, body: body}}) do
-        response = body |> Poison.decode!() |> build_response
+      def handle_response({:error, %HTTPoison.Error{id: nil, reason: :nxdomain}}, conn),
+        do: ApiFailure.new(conn |> Credentials.new(), :unreachable)
 
-        {:ok, response}
-      end
+      def handle_response({:error, %HTTPoison.Error{id: nil, reason: :closed}}, conn),
+        do: ApiFailure.new(conn |> Credentials.new(), :connection_closed)
 
-      def handle_response({:error, %HTTPoison.Error{id: nil, reason: :enetdown}}) do
-        {:error, "Could not reach Spotify API."}
-      end
+      def handle_response({:error, %HTTPoison.Error{id: nil, reason: :connect_timeout}}, conn),
+        do: ApiFailure.new(conn |> Credentials.new(), :timeout)
 
-      def handle_response({:error, %HTTPoison.Error{id: nil, reason: :nxdomain}}) do
-        {:error, "Could not reach Spotify API."}
-      end
+      def handle_response({:error, %HTTPoison.Error{id: nil, reason: :timeout}}, conn),
+        do: ApiFailure.new(conn |> Credentials.new(), :timeout)
 
-      def handle_response({:error, %HTTPoison.Error{id: nil, reason: :closed}}) do
-        {:error, "The connection closed."}
-      end
+      defp handle_ok_response(
+             credentials = %Credentials{},
+             %{
+               "error" => %{
+                 "message" => error_message,
+                 "status" => error_status
+               }
+             }
+           ),
+           do: ApiFailure.new(credentials, error_message, :http_error, error_status)
 
-      def handle_response({:error, %HTTPoison.Error{id: nil, reason: :timeout}}) do
-        {:error, "The connection timed out."}
-      end
+      defp handle_ok_response(credentials = %Credentials{}, {:error, message}),
+        do: ApiFailure.new(credentials, message)
+
+      defp handle_ok_response(credentials = %Credentials{}, {:ok, response}),
+        do: ApiSuccess.new(credentials, response)
+
+      defp handle_ok_response(credentials = %Credentials{}, response),
+        do: ApiSuccess.new(credentials, response)
     end
   end
 end

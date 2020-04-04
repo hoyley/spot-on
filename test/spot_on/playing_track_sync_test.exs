@@ -10,16 +10,16 @@ defmodule SpotOn.PlayingTrackSyncTest do
   use SpotOn.Helpers.MockHelper
 
   setup [:set_mox_global]
+  @playing_track_poll_ms Application.get_env(:spot_on, :playing_track_poll_ms)
 
   describe "syncing a users playing track" do
-    @playing_track_poll_ms Application.get_env(:spot_on, :playing_track_poll_ms)
 
     setup do
       initial_track = default_playing_track()
       %{user: user, creds: creds} = create_user_and_tokens()
       mock_get_playing_track(default_playing_track(), creds)
 
-      pid = PlayingTrackSync.start_link(user.name)
+      pid = PlayingTrackSync.start_link(user.name, creds)
 
       second_track =
         PlayingTrack.new(
@@ -74,4 +74,16 @@ defmodule SpotOn.PlayingTrackSyncTest do
       PlayingTrackSync.stop_sync(state[:user].name)
     end
   end
+
+  test "syncing a users playing track, error is handled gracefully" do
+    %{user: user, creds: creds} = create_user_and_tokens()
+    mock_get_playing_track(default_playing_track(), creds)
+
+    PlayingTrackSync.start_link(user.name, creds)
+
+    mock_http_fail_get_enetdown(creds)
+    :timer.sleep(trunc(@playing_track_poll_ms * 1.1))
+
+    assert PlayingTrackSync.get(default_user_name()) == nil
+    end
 end

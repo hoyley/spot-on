@@ -3,6 +3,8 @@ defmodule SpotOn.ApiTest do
   alias SpotOn.SpotifyApi.PlayingTrack
   alias SpotOn.SpotifyApi.Track
   alias SpotOn.SpotifyApi.Api
+  alias SpotOn.SpotifyApi.ApiSuccess
+  alias SpotOn.SpotifyApi.ApiFailure
   use SpotOnWeb.ConnCase
   use SpotOn.Helpers.MockHelper
   import SpotOn.Helpers.ModelHelper
@@ -81,6 +83,62 @@ defmodule SpotOn.ApiTest do
 
       success = Api.get_playing_track(user.name, creds)
       success.result |> assert_equals(expected_track)
+    end
+
+    test "http get call failure retries successfully on token expired" do
+      %{creds: creds} = create_user_and_tokens()
+
+      mock_http_get_fail_401()
+      new_creds = mock_refresh_process(creds)
+      mock_get_my_profile(new_creds)
+
+      success = %ApiSuccess{} = Api.get_my_profile(new_creds)
+      assert new_creds == success.credentials
+    end
+
+    test "http get call failure when internet down" do
+      %{creds: creds} = create_user_and_tokens()
+
+      mock_http_fail_get_enetdown(creds)
+
+      failure = %ApiFailure{} = Api.get_my_profile(creds)
+      assert failure.status === :enet_down
+    end
+
+    test "http get call failure when unreachable" do
+      %{creds: creds} = create_user_and_tokens()
+
+      mock_http_fail_get_nxdomain(creds)
+
+      failure = %ApiFailure{} = Api.get_my_profile(creds)
+      assert failure.status === :unreachable
+    end
+
+    test "http get call failure when closed" do
+      %{creds: creds} = create_user_and_tokens()
+
+      mock_http_fail_get_closed(creds)
+
+      failure = %ApiFailure{} = Api.get_my_profile(creds)
+      assert failure.status === :connection_closed
+    end
+
+    test "http get call failure when connect timeout" do
+      %{creds: creds} = create_user_and_tokens()
+
+      mock_http_fail_get_connect_timeout(creds)
+
+      failure = %ApiFailure{} = Api.get_my_profile(creds)
+      assert failure.status === :timeout
+    end
+
+    test "http get call failure when timeout" do
+      %{creds: creds} = create_user_and_tokens()
+
+      mock_http_fail_get_timeout(creds)
+
+      failure = %ApiFailure{} = Api.get_my_profile(creds)
+      assert failure.status === :timeout
     end
   end
 end

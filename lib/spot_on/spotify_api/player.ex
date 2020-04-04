@@ -5,19 +5,19 @@ defmodule SpotOn.SpotifyApi.Player do
   def current_track(conn) do
     conn
     |> Client.get(current_track_url())
-    |> handle_response
+    |> handle_response(conn)
   end
 
   def play(conn, params) do
     conn
     |> Client.put(play_track_url(), params)
-    |> handle_response
+    |> handle_response(conn)
   end
 
   def pause(conn) do
     conn
     |> Client.put(pause_track_url())
-    |> handle_response
+    |> handle_response(conn)
   end
 
   def current_track_url() do

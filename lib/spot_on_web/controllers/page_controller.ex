@@ -50,4 +50,8 @@ defmodule SpotOnWeb.PageController do
 
     redirect(conn2, external: "https://www.spotify.com/us/logout/")
   end
+
+  def error(conn = %Plug.Conn{}, _params) do
+    render(conn, "error.html")
+  end
 end

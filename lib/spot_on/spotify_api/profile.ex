@@ -31,7 +31,7 @@ defmodule SpotOn.SpotifyApi.Profile do
       # => { :ok, %SpotOn.SpotifyApi.Profile{..} }
   """
   def me(conn) do
-    conn |> Client.get(me_url()) |> handle_response
+    conn |> Client.get(me_url()) |> handle_response(conn)
   end
 
   @doc """
@@ -53,7 +53,7 @@ defmodule SpotOn.SpotifyApi.Profile do
   """
   def user(conn, user_id) do
     url = user_url(user_id)
-    conn |> Client.get(url) |> handle_response
+    conn |> Client.get(url) |> handle_response(conn)
   end
 
   @doc """

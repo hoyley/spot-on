@@ -24,8 +24,7 @@ defmodule SpotOnWeb.Router do
 
     get "/", PageController, :index
     get "/logout", PageController, :logout
-    get "/unfollow", PageController, :unfollow
-    get "/follow", PageController, :follow
+    get "/error", PageController, :error
     get "/authenticate", AuthController, :authenticate
     get "/authorize", AuthController, :authorize
   end

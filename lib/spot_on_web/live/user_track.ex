@@ -103,10 +103,9 @@ defmodule SpotOnWeb.UserTrack do
     |> assign(:logged_in_user_can_unfollow, logged_in_user_can_unfollow)
   end
 
-  def assign_playing_track(socket, track = %PlayingTrack{}),
-    do: assign_playing_track(socket, track, DateTime.utc_now())
+  def assign_playing_track(socket, nil), do: assign_playing_track(socket, nil, nil)
 
-  def assign_playing_track(socket, nil),
+  def assign_playing_track(socket, nil, _),
     do:
       socket
       |> assign(:playing_track, nil)
@@ -116,7 +115,7 @@ defmodule SpotOnWeb.UserTrack do
   def assign_playing_track(
         socket,
         track = %PlayingTrack{},
-        last_updated = %DateTime{}
+        last_updated = %DateTime{} \\ DateTime.utc_now()
       ) do
     estimated_track = track && get_estimated_track(track, last_updated)
 

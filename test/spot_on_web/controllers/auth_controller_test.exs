@@ -29,15 +29,15 @@ defmodule SpotOn.AuthControllerTest do
                "https://accounts.spotify.com/authorize"
     end
 
-    test "when code provided, authentication fails", %{conn: conn} do
-      assert_raise AuthenticationError,
-                   "No code provided by Spotify. Authorize your app again",
-                   fn ->
-                     conn
-                     |> Cookies.set_refresh_cookie("refresh")
-                     |> Cookies.set_access_cookie("access")
-                     |> AuthController.authenticate(nil)
-                   end
+    test "when no code provided, authentication fails", %{conn: conn} do
+      response =
+        conn
+        |> Cookies.set_refresh_cookie("refresh")
+        |> Cookies.set_access_cookie("access")
+        |> AuthController.authenticate(nil)
+
+      assert redirected_to(response, 302) =~
+               "/error"
     end
 
     test "when code provided and Spotify authenticates, authentication succeeds",

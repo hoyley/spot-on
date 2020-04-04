@@ -2,6 +2,7 @@ defmodule SpotOn.Helpers.Defaults do
   alias SpotOn.SpotifyApi.Credentials
   alias SpotOn.SpotifyApi.PlayingTrack
   alias SpotOn.SpotifyApi.Track
+  alias SpotOn.SpotifyApi.Profile
 
   def default_user_name, do: "test_user"
   def default_user_display_name, do: "Test User"
@@ -35,4 +36,7 @@ defmodule SpotOn.Helpers.Defaults do
           default_playing_track_duration_ms()
         )
       )
+
+  def default_my_profile,
+    do: %Profile{id: default_user_name(), display_name: default_user_display_name()}
 end

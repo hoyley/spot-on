@@ -1,13 +1,3 @@
-# This file has been copied and modified from [https://github.com/jsncmgs1/spotify_ex].
-# The repository is not used as a library because it doesn't support mocking of the API level.
-defmodule AuthenticationError do
-  defexception [:message]
-
-  def exception(message) do
-    %AuthenticationError{message: message}
-  end
-end
-
 defmodule SpotOn.SpotifyApi.Authentication do
   @moduledoc """
   Authenticates the Spotify user.
@@ -25,7 +15,7 @@ defmodule SpotOn.SpotifyApi.Authentication do
   If you pass Credentials, you will be responsible for persisting the auth tokens
   between requests.
   """
-  alias SpotOn.SpotifyApi.{Credentials, Cookies}
+  alias SpotOn.SpotifyApi.{Credentials, Cookies, AuthenticationClient, ApiFailure}
 
   @doc """
   Authenticates the user
@@ -33,31 +23,19 @@ defmodule SpotOn.SpotifyApi.Authentication do
   The authorization code must be present from spotify or an exception
   will be raised.  The token will be refreshed if possible, otherwise
   the app will request new access and request tokens.
-
-  ## Example: ##
-      Spotify.authenticate(conn, %{"code" => code})
-      # {:ok, conn}
-
-      Spotify.authenticate(conn, %{"not_a_code" => invalid})
-      # AuthenticationError, "No code provided by Spotify. Authorize your app again"
-
-      Spotify.authenticate(auth, params)
-      # {:ok, auth}
   """
   def authenticate(conn_or_auth, map)
 
   def authenticate(conn = %Plug.Conn{}, params) do
-    {:ok, auth} = conn |> Credentials.new() |> authenticate(params)
-    {:ok, Cookies.set_cookies(conn, auth)}
+    conn |> Credentials.new() |> authenticate(params)
   end
 
-  def authenticate(auth, %{"code" => code}) do
-    auth |> body_params(code) |> AuthenticationClient.post()
+  def authenticate(auth = %Credentials{}, %{"code" => code}) do
+    auth |> body_params(code) |> AuthenticationClient.post(auth)
   end
 
-  def authenticate(_, _) do
-    raise AuthenticationError,
-          "No code provided by Spotify. Authorize your app again"
+  def authenticate(auth = %Credentials{}, _) do
+    ApiFailure.new(auth, "No code provided by Spotify.", :auth_error)
   end
 
   @doc """
@@ -73,7 +51,7 @@ defmodule SpotOn.SpotifyApi.Authentication do
   end
 
   def refresh(%Credentials{refresh_token: nil}), do: :unauthorized
-  def refresh(auth), do: auth |> body_params |> AuthenticationClient.post()
+  def refresh(auth = %Credentials{}), do: auth |> body_params |> AuthenticationClient.post(auth)
 
   @doc """
   Checks for refresh and access tokens

@@ -5,7 +5,11 @@ defmodule SpotOn.SpotifyApi.ApiSuccess do
   defstruct result: nil,
             credentials: nil
 
-  def new(result, credentials = %Credentials{}) do
+  def new(credentials = %Credentials{}, result) do
     %ApiSuccess{result: result, credentials: credentials}
+  end
+
+  def new(credentials = %Credentials{}) do
+    %ApiSuccess{credentials: credentials}
   end
 end

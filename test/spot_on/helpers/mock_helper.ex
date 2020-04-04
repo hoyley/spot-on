@@ -1,6 +1,7 @@
 defmodule SpotOn.Helpers.MockHelper do
   alias SpotOn.SpotifyApi.Credentials
   alias SpotOn.SpotifyApi.PlayingTrack
+  alias SpotOn.SpotifyApi.Profile
   import SpotOn.Helpers.Defaults
 
   defmacro __using__(_) do
@@ -39,6 +40,21 @@ defmodule SpotOn.Helpers.MockHelper do
         end)
       end
 
+      def mock_get_my_profile(credentials = %Credentials{}),
+        do: mock_get_my_profile(default_my_profile(), credentials)
+
+      def mock_get_my_profile(profile = %Profile{}, credentials = %Credentials{}) do
+        ClientBehaviorMock
+        |> expect(:get, fn creds, url ->
+          assert url === "https://api.spotify.com/v1/me"
+
+          assert creds.access_token === credentials.access_token
+          assert creds.refresh_token === credentials.refresh_token
+
+          {:ok, %HTTPoison.Response{status_code: 200, body: to_json(profile)}}
+        end)
+      end
+
       def mock_put_pause_track(credentials = %Credentials{}) do
         ClientBehaviorMock
         |> expect(:put, fn creds, url, _ ->
@@ -73,6 +89,56 @@ defmodule SpotOn.Helpers.MockHelper do
           {:ok, %HTTPoison.Response{status_code: 200, body: ""}}
         end)
       end
+
+      def mock_authenticate(refresh_token, new_access_token) do
+        ClientBehaviorMock
+        |> expect(:authenticate, fn url, params ->
+          assert url === "https://accounts.spotify.com/api/token"
+          assert params == "grant_type=refresh_token&refresh_token=#{refresh_token}"
+
+          {:ok,
+           %HTTPoison.Response{status_code: 200, body: '{"access_token": "#{new_access_token}"}'}}
+        end)
+      end
+
+      def mock_refresh_process(creds = %Credentials{}) do
+        new_creds = Credentials.new("auth_after_refresh", creds.refresh_token)
+        mock_authenticate(creds.refresh_token, new_creds.access_token)
+        mock_get_my_profile(new_creds)
+        new_creds
+      end
+
+      def mock_http_get_fail_401() do
+        ClientBehaviorMock
+        |> expect(:get, fn url, params ->
+          {:ok, %HTTPoison.Response{status_code: 401}}
+        end)
+      end
+
+      def mock_http_fail(credentials = %Credentials{}, client_action, reason) do
+        ClientBehaviorMock
+        |> expect(client_action, fn creds, url ->
+          assert creds.access_token === credentials.access_token
+          assert creds.refresh_token === credentials.refresh_token
+
+          {:error, %HTTPoison.Error{reason: reason}}
+        end)
+      end
+
+      def mock_http_fail_get_enetdown(credentials = %Credentials{}),
+        do: mock_http_fail(credentials, :get, :enetdown)
+
+      def mock_http_fail_get_nxdomain(credentials = %Credentials{}),
+        do: mock_http_fail(credentials, :get, :nxdomain)
+
+      def mock_http_fail_get_closed(credentials = %Credentials{}),
+        do: mock_http_fail(credentials, :get, :closed)
+
+      def mock_http_fail_get_connect_timeout(credentials = %Credentials{}),
+        do: mock_http_fail(credentials, :get, :connect_timeout)
+
+      def mock_http_fail_get_timeout(credentials = %Credentials{}),
+        do: mock_http_fail(credentials, :get, :timeout)
     end
   end
 end
