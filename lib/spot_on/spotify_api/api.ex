@@ -40,7 +40,6 @@ defmodule SpotOn.SpotifyApi.Api do
         ApiSuccess.new(success.credentials, PlayingTrack.new(user_id, track))
 
       failure = %ApiFailure{} ->
-        Logger.error("#{failure.message}")
         failure
     end
   end

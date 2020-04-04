@@ -28,6 +28,19 @@ defmodule SpotOn.SpotifyApi.ApiHelpers do
       defp handle_call_response(result = %ApiSuccess{}, _, _), do: result
 
       defp handle_call_response(
+             failure = %ApiFailure{credentials: credentials, http_status: 429},
+             api_function,
+             true
+           ) do
+
+        wait = (failure.result && Map.get(failure.result, "retry_after")) || 1
+        :timer.sleep(wait * 1000)
+
+        refresh(credentials)
+        |> handle_refresh_response(api_function)
+      end
+
+      defp handle_call_response(
              failure = %ApiFailure{credentials: credentials, http_status: 401},
              api_function,
              true
@@ -72,7 +85,7 @@ defmodule SpotOn.SpotifyApi.ApiHelpers do
 
       defp update_tokens_internal(creds = %Credentials{}) do
         creds
-        |> Profile.me()
+        |> call(&Profile.me/1)
         |> update_tokens_internal
       end
 

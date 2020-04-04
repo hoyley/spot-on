@@ -26,7 +26,13 @@ defmodule SpotOn.Helpers.Helper do
             duration_ms: playing_track.track.duration_ms,
             uri: playing_track.track.song_uri,
             album: %{
-              name: playing_track.track.album_name
+              name: playing_track.track.album_name,
+              images: [
+                %{
+                  height: 64,
+                  url: playing_track.track.small_image
+                }
+              ]
             },
             artists: [
               %{

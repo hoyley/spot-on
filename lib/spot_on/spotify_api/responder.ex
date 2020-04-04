@@ -19,26 +19,6 @@ defmodule Responder do
 
   defmacro __using__(_) do
     quote do
-      def handle_response({message, %HTTPoison.Response{status_code: code, body: body}}, conn)
-          when code in 400..499 do
-        ApiFailure.new(
-          conn |> Credentials.new(),
-          message,
-          :http_error,
-          code,
-          body && Poison.decode!(body)
-        )
-      end
-
-      def handle_response({:ok, %HTTPoison.Response{status_code: code, body: ""}}, conn)
-          when code in 200..299,
-          do: ApiSuccess.new(conn |> Credentials.new())
-
-      def handle_response({:ok, poison = %HTTPoison.Response{body: body}}, conn) do
-        response = body |> Poison.decode!() |> build_response
-        handle_ok_response(conn |> Credentials.new(), response)
-      end
-
       # special handling for 'too many requests' status
       # in order to know when to retry
       def handle_response(
@@ -52,6 +32,24 @@ defmodule Responder do
           |> Integer.parse()
 
         ApiFailure.new(conn, :rate_limit, retry_after)
+      end
+
+      def handle_response({message, %HTTPoison.Response{status_code: code, body: body}}, conn)
+          when code in 400..499 do
+        ApiFailure.new(
+          conn |> Credentials.new(),
+          :http_error,
+          code
+        )
+      end
+
+      def handle_response({:ok, %HTTPoison.Response{status_code: code, body: ""}}, conn)
+          when code in 200..299,
+          do: ApiSuccess.new(conn |> Credentials.new())
+
+      def handle_response({:ok, poison = %HTTPoison.Response{body: body}}, conn) do
+        response = body |> Poison.decode!() |> build_response
+        handle_ok_response(conn |> Credentials.new(), response)
       end
 
       def handle_response({:error, %HTTPoison.Error{id: nil, reason: :enetdown}}, conn),

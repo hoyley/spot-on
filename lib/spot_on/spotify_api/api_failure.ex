@@ -27,6 +27,9 @@ defmodule SpotOn.SpotifyApi.ApiFailure do
   def new(credentials = %Credentials{}, status = :unreachable),
     do: new(credentials, "The API is unreachable.", status)
 
+  def new(credentials = %Credentials{}, status = :rate_limit),
+    do: new(credentials, "The rate limit has been reached.", status)
+
   def new(credentials = %Credentials{}, status = :enet_down),
     do: new(credentials, "No internet connection found.", status)
 
@@ -37,10 +40,14 @@ defmodule SpotOn.SpotifyApi.ApiFailure do
     do:
       new(credentials, "Exceeded Spotify API Rate Limit.", status, 429, %{retry_after: retry_after})
 
+  def new(credentials = %Credentials{}, :http_error, 429), do: new(credentials, :rate_limit)
+
+  def new(credentials = %Credentials{}, :http_error, http_status),
+    do: new(credentials, "An HTTP error occurred [#{http_status}]", :http_error, http_status)
+
   @spec new(%Credentials{}, String.t(), status) :: %ApiFailure{}
-  def new(credentials = %Credentials{}, message, status) do
-    %ApiFailure{message: message, status: status, credentials: credentials}
-  end
+  def new(credentials = %Credentials{}, message, status),
+    do: %ApiFailure{message: message, status: status, credentials: credentials}
 
   @spec new(%Credentials{}, String.t(), status, pos_integer()) :: %ApiFailure{}
   def new(credentials = %Credentials{}, message, status, http_status) do

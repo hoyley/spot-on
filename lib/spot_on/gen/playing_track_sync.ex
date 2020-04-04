@@ -128,6 +128,10 @@ defmodule SpotOn.Gen.PlayingTrackSync do
     estimated_one_way_millis = total_millis / 2
 
     case result do
+      %ApiFailure{status: :rate_limit} ->
+        Logger.warn("Rate limit reached, need to back off.")
+        state
+
       failure = %ApiFailure{} ->
         Logger.error(
           "Error trying to sync playing track for user [#{state.user_id}]. Status [#{failure.status}], HTTP Status [#{
@@ -135,12 +139,7 @@ defmodule SpotOn.Gen.PlayingTrackSync do
           }], Message [#{failure.message}]"
         )
 
-        PlayingTrackSyncState.new(
-          state.user_id,
-          state.credentials,
-          nil,
-          estimated_one_way_millis
-        )
+        state
 
       %ApiSuccess{result: track, credentials: new_creds} ->
         PlayingTrackSyncState.new(

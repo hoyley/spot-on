@@ -13,7 +13,6 @@ defmodule SpotOn.PlayingTrackSyncTest do
   @playing_track_poll_ms Application.get_env(:spot_on, :playing_track_poll_ms)
 
   describe "syncing a users playing track" do
-
     setup do
       initial_track = default_playing_track()
       %{user: user, creds: creds} = create_user_and_tokens()
@@ -84,6 +83,6 @@ defmodule SpotOn.PlayingTrackSyncTest do
     mock_http_fail_get_enetdown(creds)
     :timer.sleep(trunc(@playing_track_poll_ms * 1.1))
 
-    assert PlayingTrackSync.get(default_user_name()) == nil
-    end
+    assert PlayingTrackSync.get(default_user_name()) == default_playing_track()
+  end
 end

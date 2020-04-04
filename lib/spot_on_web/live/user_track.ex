@@ -105,6 +105,9 @@ defmodule SpotOnWeb.UserTrack do
 
   def assign_playing_track(socket, nil), do: assign_playing_track(socket, nil, nil)
 
+  def assign_playing_track(socket, track = %PlayingTrack{}),
+    do: assign_playing_track(socket, track, DateTime.utc_now())
+
   def assign_playing_track(socket, nil, _),
     do:
       socket
@@ -112,10 +115,13 @@ defmodule SpotOnWeb.UserTrack do
       |> assign(:estimated_track, nil)
       |> assign(:playing_track_updated, nil)
 
+  def assign_playing_track(socket, track = %PlayingTrack{}, nil),
+    do: assign_playing_track(socket, track, DateTime.utc_now())
+
   def assign_playing_track(
         socket,
         track = %PlayingTrack{},
-        last_updated = %DateTime{} \\ DateTime.utc_now()
+        last_updated = %DateTime{}
       ) do
     estimated_track = track && get_estimated_track(track, last_updated)
 
