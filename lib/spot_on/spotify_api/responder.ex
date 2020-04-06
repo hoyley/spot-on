@@ -34,6 +34,27 @@ defmodule Responder do
         ApiFailure.new(conn, :rate_limit, retry_after)
       end
 
+      def handle_response(
+            {message, %HTTPoison.Response{status_code: 400, body: body}},
+            conn
+          ) do
+        case body |> Poison.decode!() do
+          %{"error" => "invalid_grant"} ->
+            ApiFailure.new(
+              conn |> Credentials.new(),
+              :refresh_revoked
+            )
+
+          decoded_body ->
+            ApiFailure.new(
+              conn |> Credentials.new(),
+              :http_error,
+              400,
+              decoded_body
+            )
+        end
+      end
+
       def handle_response({message, %HTTPoison.Response{status_code: code, body: body}}, conn)
           when code in 400..499 do
         ApiFailure.new(

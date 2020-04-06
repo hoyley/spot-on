@@ -127,28 +127,56 @@ defmodule SpotOn.Gen.PlayingTrackSync do
     total_millis = micros / 1000
     estimated_one_way_millis = total_millis / 2
 
-    case result do
-      %ApiFailure{status: :rate_limit} ->
-        Logger.warn("Rate limit reached, need to back off.")
-        state
+    state |> handle_playing_track_result(result, estimated_one_way_millis)
+  end
 
-      failure = %ApiFailure{} ->
-        Logger.error(
-          "Error trying to sync playing track for user [#{state.user_id}]. Status [#{failure.status}], HTTP Status [#{
-            failure.http_status
-          }], Message [#{failure.message}]"
-        )
+  defp handle_playing_track_result(
+         state = %PlayingTrackSyncState{},
+         %ApiSuccess{result: track, credentials: new_creds},
+         estimated_one_way_millis
+       ) do
+    PlayingTrackSyncState.new(
+      state.user_id,
+      new_creds,
+      track,
+      estimated_one_way_millis
+    )
+  end
 
-        state
+  defp handle_playing_track_result(
+         state = %PlayingTrackSyncState{},
+         %ApiFailure{status: :rate_limit},
+         _estimated_one_way_millis
+       ) do
+    Logger.warn("Rate limit reached, need to back off.")
+    state
+  end
 
-      %ApiSuccess{result: track, credentials: new_creds} ->
-        PlayingTrackSyncState.new(
-          state.user_id,
-          new_creds,
-          track,
-          estimated_one_way_millis
-        )
-    end
+  defp handle_playing_track_result(
+         state = %PlayingTrackSyncState{},
+         %ApiFailure{status: :refresh_revoked},
+         _estimated_one_way_millis
+       ) do
+    Logger.warn(
+      "User [#{state.user_id}] has a revoked Spotify API token. Will stop syncing the track."
+    )
+
+    SpotOn.PubSub.user_revoke_refresh_token(state.user_id)
+    state
+  end
+
+  defp handle_playing_track_result(
+         state = %PlayingTrackSyncState{},
+         failure = %ApiFailure{},
+         _estimated_one_way_millis
+       ) do
+    Logger.error(
+      "Error trying to sync playing track for user [#{state.user_id}]. Status [#{failure.status}], HTTP Status [#{
+        failure.http_status
+      }], Message [#{failure.message}]"
+    )
+
+    state
   end
 
   defp publish_changes(

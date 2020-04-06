@@ -32,7 +32,6 @@ defmodule SpotOn.SpotifyApi.ApiHelpers do
              api_function,
              true
            ) do
-
         wait = (failure.result && Map.get(failure.result, "retry_after")) || 1
         :timer.sleep(wait * 1000)
 
