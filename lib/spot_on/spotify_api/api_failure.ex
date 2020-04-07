@@ -11,6 +11,7 @@ defmodule SpotOn.SpotifyApi.ApiFailure do
           | :enet_down
           | :rate_limit
           | :auth_error
+          | :refresh_revoked
 
   defstruct message: nil,
             status: nil,
@@ -32,6 +33,9 @@ defmodule SpotOn.SpotifyApi.ApiFailure do
 
   def new(credentials = %Credentials{}, status = :enet_down),
     do: new(credentials, "No internet connection found.", status)
+
+  def new(credentials = %Credentials{}, status = :refresh_revoked),
+    do: new(credentials, "The user's Spotify refresh token was revoked.", status)
 
   @spec new(%Credentials{}, String.t()) :: %ApiFailure{}
   def new(credentials = %Credentials{}, message), do: new(credentials, message, :unknown)
