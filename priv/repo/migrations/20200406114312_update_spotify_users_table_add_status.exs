@@ -3,10 +3,10 @@ defmodule SpotOn.Repo.Migrations.UpdateSpotifyUsersTable do
   alias SpotOn.Model.UserStatusEnum
 
   def change do
-    UserStatusEnum.create_type
+    UserStatusEnum.create_type()
 
     alter table(:spotify_users) do
-      add :status, UserStatusEnum.type(), null: false, default: fragment("now()")
+      add :status, UserStatusEnum.type(), null: false, default: "active"
     end
   end
 end

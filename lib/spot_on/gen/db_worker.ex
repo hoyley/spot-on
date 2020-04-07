@@ -22,7 +22,8 @@ defmodule SpotOn.Gen.DbWorker do
   end
 
   def handle_info({:user_revoke_refresh_token, user_name}, state) do
-    update_spotify
+    revoke_refresh_token(user_name)
+    {:noreply, state}
   end
 
   defp update_spotify_activity(user_name) do
@@ -43,12 +44,13 @@ defmodule SpotOn.Gen.DbWorker do
     try do
       {:ok, user} =
         Model.get_user_by_name(user_name)
-        |> Model.update_user_status()
+        |> Model.update_user(%{status: :revoked})
+
+      user |> SpotOn.PubSub.publish_user_update()
     rescue
       error ->
         Logger.error(Exception.format(:error, error, __STACKTRACE__))
         raise error
     end
   end
-
 end

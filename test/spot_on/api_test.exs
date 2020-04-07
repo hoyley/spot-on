@@ -140,5 +140,14 @@ defmodule SpotOn.ApiTest do
       failure = %ApiFailure{} = Api.get_my_profile(creds)
       assert failure.status === :timeout
     end
+
+    test "http get call failure when refresh token revoked" do
+      %{creds: creds} = create_user_and_tokens()
+
+      mock_http_fail_get_refresh_revoked(creds)
+
+      failure = %ApiFailure{} = Api.get_my_profile(creds)
+      assert failure.status === :refresh_revoked
+    end
   end
 end

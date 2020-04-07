@@ -5,11 +5,13 @@ defmodule SpotOnWeb.AuthController do
   alias SpotOn.SpotifyApi.ApiSuccess
   alias SpotOn.SpotifyApi.ApiFailure
   alias SpotOn.SpotifyApi.Cookies
+  alias SpotOn.Actions
 
   def authenticate(conn, params) do
     case Authentication.authenticate(conn, params) do
       %ApiSuccess{credentials: credentials} ->
         Cookies.set_cookies(conn, credentials)
+        |> Actions.update_my_user_tokens()
         |> redirect(to: "/")
 
       %ApiFailure{} ->

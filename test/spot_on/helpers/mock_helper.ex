@@ -139,6 +139,20 @@ defmodule SpotOn.Helpers.MockHelper do
 
       def mock_http_fail_get_timeout(credentials = %Credentials{}),
         do: mock_http_fail(credentials, :get, :timeout)
+
+      def mock_http_fail_get_refresh_revoked(credentials = %Credentials{}),
+        do:
+          ClientBehaviorMock
+          |> expect(:get, fn creds, url ->
+            assert creds.access_token === credentials.access_token
+            assert creds.refresh_token === credentials.refresh_token
+
+            {:error,
+             %HTTPoison.Response{
+               status_code: 400,
+               body: ~s({"error":"invalid_grant","error_description":"Refresh token revoked"})
+             }}
+          end)
     end
   end
 end

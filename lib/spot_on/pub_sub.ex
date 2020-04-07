@@ -83,7 +83,21 @@ defmodule SpotOn.PubSub do
   end
 
   def publish_user_revoke_refresh_token(user_name) do
-    Phoenix.PubSub.broadcast(:spot_on, "user_revoke_refresh_token:#{user.name}", {:user_revoke_refresh_token, user_name})
+    Phoenix.PubSub.broadcast(
+      :spot_on,
+      "user_revoke_refresh_token:*",
+      {:user_revoke_refresh_token, user_name}
+    )
+
+    Phoenix.PubSub.broadcast(
+      :spot_on,
+      "user_revoke_refresh_token:#{user_name}",
+      {:user_revoke_refresh_token, user_name}
+    )
+  end
+
+  def subscribe_user_revoke_refresh_token() do
+    Phoenix.PubSub.subscribe(:spot_on, "user_revoke_refresh_token:*")
   end
 
   def subscribe_user_revoke_refresh_token(user_name) do

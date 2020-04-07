@@ -8,6 +8,7 @@ defmodule SpotOn.SpotifyApi.ApiHelpers do
       alias SpotOn.SpotifyApi.ApiSuccess
       alias SpotOn.Model
       alias SpotOn.Model.User
+      alias SpotOn.Actions
       require Logger
 
       def call(conn = %Plug.Conn{}, api_function),
@@ -44,9 +45,7 @@ defmodule SpotOn.SpotifyApi.ApiHelpers do
              api_function,
              true
            ) do
-        Logger.info(
-          "Attempted to call API Endpoint received #{failure.status} - [#{failure.message}]. Refresh will follow."
-        )
+        Logger.info("Attempted to call API Endpoint and received 401. Refresh will follow.")
 
         refresh(credentials)
         |> handle_refresh_response(api_function)
@@ -70,7 +69,7 @@ defmodule SpotOn.SpotifyApi.ApiHelpers do
             success
             |> enrich_credentials(credentials)
             |> Map.get(:credentials)
-            |> update_tokens_internal
+            |> Actions.update_my_user_tokens()
         end
       end
 
@@ -80,29 +79,6 @@ defmodule SpotOn.SpotifyApi.ApiHelpers do
            ) do
         Credentials.new(success.credentials.access_token, creds.refresh_token)
         |> ApiSuccess.new(success.result)
-      end
-
-      defp update_tokens_internal(creds = %Credentials{}) do
-        creds
-        |> call(&Profile.me/1)
-        |> update_tokens_internal
-      end
-
-      defp update_tokens_internal(
-             success = %ApiSuccess{
-               result: %Profile{id: spotify_id, display_name: display_name},
-               credentials: credentials
-             }
-           ) do
-        {:ok, user = %User{}} =
-          Model.create_or_update_user(%{
-            name: spotify_id,
-            display_name: display_name
-          })
-
-        Model.create_or_update_user_tokens(user, credentials)
-
-        success
       end
     end
   end

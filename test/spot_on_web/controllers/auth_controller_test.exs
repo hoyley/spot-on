@@ -1,7 +1,10 @@
 defmodule SpotOn.AuthControllerTest do
   import Mox
+  import SpotOn.Helpers.Defaults
   use SpotOnWeb.ConnCase
+  use SpotOn.Helpers.MockHelper
   alias SpotOn.SpotifyApi.Cookies
+  alias SpotOn.SpotifyApi.Credentials
   alias SpotOnWeb.AuthController
 
   describe "authorization" do
@@ -48,14 +51,21 @@ defmodule SpotOn.AuthControllerTest do
 
         {:ok,
          %HTTPoison.Response{
-           body: '{"access_token":"test"}'
+           body: '{"access_token":"#{default_access_token()}"}'
          }}
       end)
 
-      response =
+      new_conn =
         conn
-        |> Cookies.set_refresh_cookie("refresh")
-        |> Cookies.set_access_cookie("access")
+        |> Cookies.set_refresh_cookie(default_refresh_token())
+        |> Cookies.set_access_cookie(default_access_token())
+
+      new_conn
+      |> Credentials.new()
+      |> mock_get_my_profile()
+
+      response =
+        new_conn
         |> AuthController.authenticate(%{"code" => "spotify_code"})
 
       assert redirected_to(response, 302) == "/"

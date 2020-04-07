@@ -2,6 +2,7 @@ defmodule SpotOn.Gen.PlayingTrackSync do
   use GenServer
   alias SpotOn.Gen.PlayingTrackSyncState
   alias SpotOn.Model
+  alias SpotOn.Model.User
   alias SpotOn.SpotifyApi.Api
   alias SpotOn.SpotifyApi.ApiSuccess
   alias SpotOn.SpotifyApi.ApiFailure
@@ -36,6 +37,7 @@ defmodule SpotOn.Gen.PlayingTrackSync do
   @impl true
   def init(state = %PlayingTrackSyncState{}) do
     Logger.info('Syncing the currently playing track for [#{state.user_id}]')
+    SpotOn.PubSub.subscribe_user_update(state.user_id)
     refresh_state(state, :ok)
   end
 
@@ -47,6 +49,16 @@ defmodule SpotOn.Gen.PlayingTrackSync do
   @impl true
   def handle_info(:get, state = %PlayingTrackSyncState{}) do
     refresh_state(state, :noreply)
+  end
+
+  @impl true
+  def handle_info({:user_update, %User{status: :revoked}}, state = %PlayingTrackSyncState{}) do
+    {:stop, :normal, state}
+  end
+
+  @impl true
+  def handle_info({:user_update, %User{}}, state = %PlayingTrackSyncState{}) do
+    {:noreply, state}
   end
 
   def handle_info({:EXIT, _pid, _reason}, state = %PlayingTrackSyncState{}) do
@@ -161,7 +173,7 @@ defmodule SpotOn.Gen.PlayingTrackSync do
       "User [#{state.user_id}] has a revoked Spotify API token. Will stop syncing the track."
     )
 
-    SpotOn.PubSub.user_revoke_refresh_token(state.user_id)
+    SpotOn.PubSub.publish_user_revoke_refresh_token(state.user_id)
     state
   end
 

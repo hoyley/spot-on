@@ -1,6 +1,7 @@
 defmodule SpotOn.Model.User do
   use Ecto.Schema
   import Ecto.Changeset
+  alias SpotOn.Model.UserStatusEnum
 
   schema "spotify_users" do
     field :name, :string
@@ -18,8 +19,4 @@ defmodule SpotOn.Model.User do
     |> validate_required([:name, :display_name])
     |> unique_constraint(:name)
   end
-end
-
-defmodule SpotOn.Model.UserStatusEnum do
-  use EctoEnum, type: :user_status_enum, enums: [:active, :revoked]
 end

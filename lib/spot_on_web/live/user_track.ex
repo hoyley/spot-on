@@ -21,19 +21,19 @@ defmodule SpotOnWeb.UserTrack do
         },
         socket
       ) do
+    credentials = Credentials.new(spotify_access_token, spotify_refresh_token)
     SpotOn.PubSub.subscribe_playing_track_update_by_user_name(user_name)
     SpotOn.PubSub.subscribe_follow_update_leader(user_name)
     SpotOn.PubSub.subscribe_follow_update_follower(user_name)
     SpotOn.PubSub.subscribe_user_update(user_name)
 
+    user = Model.get_user_by_name(user_name)
+
     {:ok,
      socket
-     |> assign_playing_track(PlayingTrackSync.get(user_name))
-     |> assign(
-       :spotify_credentials,
-       Credentials.new(spotify_access_token, spotify_refresh_token)
-     )
-     |> assign_follows(user_name, logged_in_user_name)}
+     |> assign_follows(user, logged_in_user_name)
+     |> assign_playing_track(user)
+     |> assign(:spotify_credentials, credentials)}
   end
 
   def handle_info({:update_playing_track, _user_name, track}, socket) do
@@ -67,20 +67,18 @@ defmodule SpotOnWeb.UserTrack do
   defp assign_follows(
          socket = %{
            assigns: %{
-             user: %User{name: user_name},
+             user: %User{} = user,
              logged_in_user_name: logged_in_user_name
            }
          }
        ),
-       do: assign_follows(socket, user_name, logged_in_user_name)
+       do: assign_follows(socket, user, logged_in_user_name)
 
-  defp assign_follows(socket, user_name, logged_in_user_name) do
-    user = Model.get_user_by_name(user_name)
-    follow = Model.get_follow_by_follower_name(user_name)
+  defp assign_follows(socket, user = %User{}, logged_in_user_name) do
+    follow = Model.get_follow_by_follower_name(user.name)
     users_current_leader = follow && follow.leader_user
 
     logged_in_user_follow = Model.get_follow_by_follower_name(logged_in_user_name)
-
     logged_in_user_leader = logged_in_user_follow && logged_in_user_follow.leader_user
 
     # Only allow the logged in user to follow the given user if logged_in_user currently doesn't
@@ -102,6 +100,11 @@ defmodule SpotOnWeb.UserTrack do
     |> assign(:logged_in_user_can_follow, logged_in_user_can_follow)
     |> assign(:logged_in_user_can_unfollow, logged_in_user_can_unfollow)
   end
+
+  def assign_playing_track(socket, %User{status: :revoked}), do: assign_playing_track(socket, nil)
+
+  def assign_playing_track(socket, %User{status: :active, name: name}),
+    do: assign_playing_track(socket, PlayingTrackSync.get(name))
 
   def assign_playing_track(socket, nil), do: assign_playing_track(socket, nil, nil)
 

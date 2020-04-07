@@ -4,6 +4,9 @@ defmodule SpotOn.Actions do
   alias SpotOn.SpotifyApi.Api
   alias SpotOn.SpotifyApi.ApiSuccess
   alias SpotOn.SpotifyApi.Credentials
+  alias SpotOn.SpotifyApi.Profile
+  alias SpotOn.SpotifyApi.Cookies
+  alias SpotOn.Model.User
   require Logger
 
   def get_my_user(conn = %Credentials{}) do
@@ -14,12 +17,6 @@ defmodule SpotOn.Actions do
   def get_credentials_by_user_id(user_id) do
     Model.get_user_token_by_user_name(user_id)
     |> Credentials.new()
-  end
-
-  def get_all_playing_tracks() do
-    Model.list_spotify_users()
-    |> Enum.map(fn user -> get_playing_track(user.name) end)
-    |> Enum.reject(&is_nil/1)
   end
 
   def get_all_users() do
@@ -74,5 +71,47 @@ defmodule SpotOn.Actions do
       leader_name: leader_name,
       credentials: creds
     }
+  end
+
+  def update_my_user_tokens(conn = %Plug.Conn{}) do
+    %ApiSuccess{credentials: new_creds} =
+      conn
+      |> Credentials.new()
+      |> update_my_user_tokens()
+
+    Cookies.set_cookies(conn, new_creds)
+  end
+
+  def update_my_user_tokens(creds = %Credentials{}) do
+    creds
+    |> Api.call(&Profile.me/1)
+    |> handle_update_user_tokens()
+  end
+
+  def update_user_tokens(creds = %Credentials{}, user_name) do
+    user_call = fn credentials -> Profile.user(credentials, user_name) end
+
+    creds
+    |> Api.call(user_call / 1)
+    |> handle_update_user_tokens()
+  end
+
+  defp handle_update_user_tokens(
+         success = %ApiSuccess{
+           result: %Profile{id: spotify_id, display_name: display_name},
+           credentials: credentials
+         }
+       ) do
+    {:ok, user = %User{}} =
+      Model.create_or_update_user(%{
+        name: spotify_id,
+        display_name: display_name,
+        status: :active
+      })
+
+    user
+    |> Model.create_or_update_user_tokens(credentials)
+
+    success
   end
 end
