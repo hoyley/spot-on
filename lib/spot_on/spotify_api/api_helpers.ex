@@ -31,13 +31,15 @@ defmodule SpotOn.SpotifyApi.ApiHelpers do
       defp handle_call_response(
              failure = %ApiFailure{credentials: credentials, http_status: 429},
              api_function,
-             true
+             allow_refresh
            ) do
-        wait = (failure.result && Map.get(failure.result, "retry_after")) || 1
+        wait = (failure.result && Map.get(failure.result, :retry_after)) || 1
+
+        Logger.warn("Rate limit reached calling [#{inspect api_function}], waiting #{wait} second(s) to retry.")
         :timer.sleep(wait * 1000)
 
-        refresh(credentials)
-        |> handle_refresh_response(api_function)
+        credentials
+        |> call(api_function, allow_refresh)
       end
 
       defp handle_call_response(

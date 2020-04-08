@@ -157,15 +157,6 @@ defmodule SpotOn.Gen.PlayingTrackSync do
 
   defp handle_playing_track_result(
          state = %PlayingTrackSyncState{},
-         %ApiFailure{status: :rate_limit},
-         _estimated_one_way_millis
-       ) do
-    Logger.warn("Rate limit reached, need to back off.")
-    state
-  end
-
-  defp handle_playing_track_result(
-         state = %PlayingTrackSyncState{},
          %ApiFailure{status: :refresh_revoked},
          _estimated_one_way_millis
        ) do
