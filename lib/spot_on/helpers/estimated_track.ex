@@ -22,13 +22,22 @@ defmodule SpotOn.Helpers.EstimatedTrack do
       do: track
 
   # playing_track is set properly. Lets adjust for latency.
-  def get_estimated_track(state = %PlayingTrackSyncState{playing_track: track = %PlayingTrack{}}),
-    do: get_estimated_track(track, state.created_at, state.estimated_api_ms)
+  def get_estimated_track(state = %PlayingTrackSyncState{playing_track: track = %PlayingTrack{}}) do
+    additional_delay =
+      case track.is_playing do
+        true -> state.estimated_api_ms
+        _ -> 0
+      end
+
+    get_estimated_track(track, state.created_at, additional_delay)
+  end
+
+  def get_estimated_track(track = %PlayingTrack{is_playing: false}, _, _), do: track
 
   def get_estimated_track(
-        track = %PlayingTrack{},
+        track = %PlayingTrack{is_playing: true},
         created_at,
-        additional_buffer_ms \\ 0
+        additional_buffer_ms
       ) do
     millis_since_fetch = DateTime.diff(DateTime.utc_now(), created_at, :millisecond)
 

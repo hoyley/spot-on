@@ -35,7 +35,10 @@ defmodule SpotOn.SpotifyApi.ApiHelpers do
            ) do
         wait = (failure.result && Map.get(failure.result, :retry_after)) || 1
 
-        Logger.warn("Rate limit reached calling [#{inspect api_function}], waiting #{wait} second(s) to retry.")
+        Logger.warn(
+          "Rate limit reached calling [#{inspect(api_function)}], waiting #{wait} second(s) to retry."
+        )
+
         :timer.sleep(wait * 1000)
 
         credentials

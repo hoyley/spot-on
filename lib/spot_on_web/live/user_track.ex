@@ -9,7 +9,7 @@ defmodule SpotOnWeb.UserTrack do
   import SpotOn.Helpers.EstimatedTrack
   require Logger
 
-  @playing_track_progress_tick_ms 1000
+  @playing_track_progress_tick_ms 20
 
   def mount(
         _params,
@@ -28,6 +28,7 @@ defmodule SpotOnWeb.UserTrack do
     SpotOn.PubSub.subscribe_user_update(user_name)
 
     user = Model.get_user_by_name(user_name)
+    schedule_tick()
 
     {:ok,
      socket
@@ -50,7 +51,7 @@ defmodule SpotOnWeb.UserTrack do
     do: {:noreply, assign_follows(socket)}
 
   def handle_info(:playing_track_progress_tick, socket),
-    do: {:noreply, socket |> assign_playing_track}
+    do: {:noreply, socket |> handle_tick}
 
   def handle_info(
         {:follow, leader_name},
@@ -126,27 +127,22 @@ defmodule SpotOnWeb.UserTrack do
         track = %PlayingTrack{},
         last_updated = %DateTime{}
       ) do
-    estimated_track = track && get_estimated_track(track, last_updated)
-
-    estimated_track && estimated_track.is_playing &&
-      Process.send_after(
-        self(),
-        :playing_track_progress_tick,
-        @playing_track_progress_tick_ms
-      )
-
     socket
     |> assign(:playing_track, track)
-    |> assign(:estimated_track, estimated_track)
+    |> assign(:estimated_track, get_estimated_track(track, last_updated, 0))
     |> assign(:playing_track_updated, last_updated)
   end
 
-  def assign_playing_track(
+  def handle_tick(
         socket = %{
           assigns: %{playing_track: track, playing_track_updated: updated_at}
         }
-      ),
-      do: assign_playing_track(socket, track, updated_at)
+      ) do
+    schedule_tick()
+
+    socket
+    |> assign(:estimated_track, track && get_estimated_track(track, updated_at, 0))
+  end
 
   defp do_follow(socket, leader_name, creds = %Credentials{}) do
     %{credentials: new_creds} = Actions.start_follow(creds, leader_name)
@@ -165,4 +161,12 @@ defmodule SpotOnWeb.UserTrack do
      |> assign_follows
      |> assign(:spotify_credentials, new_creds)}
   end
+
+  defp schedule_tick(),
+    do:
+      Process.send_after(
+        self(),
+        :playing_track_progress_tick,
+        @playing_track_progress_tick_ms
+      )
 end

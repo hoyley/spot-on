@@ -1,9 +1,9 @@
 <div>
   <h3 class="ml-2">Welcome <%= @logged_in_user.display_name %></h3>
-  <div class="container user-cards">
+  <div class="container user-cards grid-xs">
     <div class="columns">
       <%= for user <- @users do %>
-        <div class="column col-6 col-sm-12">
+        <div class="column">
           <div class="card text-ellipsis">
           <%= live_render @socket, SpotOnWeb.UserTrack, id: 'user_track-#{user.name}', user: user,
               session: %{
