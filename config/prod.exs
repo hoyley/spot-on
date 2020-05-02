@@ -15,13 +15,17 @@ config :spot_on, SpotOnWeb.Endpoint,
     host: System.get_env("URL_HOST", "localhost"),
     port: System.get_env("URL_PORT", "80")
   ],
-  cache_static_manifest: "priv/static/cache_manifest.json"
+  cache_static_manifest: "priv/static/cache_manifest.json",
+  secret_key_base: Map.fetch!(System.get_env(), "SECRET_KEY_BASE"),
+  server: true
 
 config :spot_on, SpotOn.Repo,
   database: "spot-on",
+  url: "${DATABASE_URL}",
   port: 5435,
   ssl: true,
-  pool_size: 10
+  pool_size: System.get_env("PGPOOL_SIZE", "2")
+
 
 # Do not print debug messages in production
 config :logger, level: :info
