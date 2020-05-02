@@ -43,8 +43,11 @@ defmodule SpotOnWeb.UserTrackList do
 
   def sort_function(logged_in_user = %User{}) do
     fn user1, user2 ->
-      user1_date = max(DateTime.to_unix(user1.last_login), DateTime.to_unix(user1.last_spotify_activity))
-      user2_date = max(DateTime.to_unix(user2.last_login), DateTime.to_unix(user2.last_spotify_activity))
+      user1_date =
+        max(DateTime.to_unix(user1.last_login), DateTime.to_unix(user1.last_spotify_activity))
+
+      user2_date =
+        max(DateTime.to_unix(user2.last_login), DateTime.to_unix(user2.last_spotify_activity))
 
       cond do
         user1 === user2 -> true

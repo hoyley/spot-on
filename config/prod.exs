@@ -1,5 +1,34 @@
 use Mix.Config
 
+secret_key_base =
+  System.get_env("SECRET_KEY_BASE") ||
+    raise """
+    environment variable SECRET_KEY_BASE is missing.
+    You can generate one by calling: mix phx.gen.secret
+    """
+
+spotify_client_id =
+  System.get_env("SPOTIFY_CLIENT_ID") ||
+    raise """
+    environment variable SPOTIFY_CLIENT_ID is missing.
+    """
+
+spotify_secret_key =
+  System.get_env("SPOTIFY_SECRET_KEY") ||
+    raise """
+    environment variable SPOTIFY_SECRET_KEY is missing.
+    """
+
+database_url =
+  System.get_env("DATABASE_URL") ||
+    raise """
+    environment variable DATABASE_URL is missing.
+    For example: ecto://USER:PASS@HOST/DATABASE
+    """
+
+port = String.to_integer(System.get_env("PORT") || "4000")
+pool_size = String.to_integer(System.get_env("POOL_SIZE") || "2")
+
 # For production, don't forget to configure the url host
 # to something meaningful, Phoenix uses this information
 # when generating URLs.
@@ -10,7 +39,7 @@ use Mix.Config
 # which you should run after static files are built and
 # before starting your production server.
 config :spot_on, SpotOnWeb.Endpoint,
-  http: [port: System.get_env("HTTP_PORT", "8080")],
+  http: [port: port, transport_options: [socket_opts: [:inet6]]],
   url: [
     host: System.get_env("URL_HOST", "localhost"),
     port: System.get_env("URL_PORT", "80")
@@ -21,11 +50,14 @@ config :spot_on, SpotOnWeb.Endpoint,
 
 config :spot_on, SpotOn.Repo,
   database: "spot-on",
-  url: "${DATABASE_URL}",
+  url: database_url,
   port: 5435,
   ssl: true,
-  pool_size: System.get_env("PGPOOL_SIZE", "2")
+  pool_size: pool_size
 
+config :spot_on,
+  client_id: spotify_client_id,
+  secret_key: spotify_secret_key
 
 # Do not print debug messages in production
 config :logger, level: :info
@@ -63,7 +95,3 @@ config :logger, level: :info
 #       force_ssl: [hsts: true]
 #
 # Check `Plug.SSL` for all available options in `force_ssl`.
-
-# Finally import the config/prod.secret.exs which loads secrets
-# and configuration from environment variables.
-import_config "prod.secret.exs"

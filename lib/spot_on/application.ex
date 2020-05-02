@@ -18,7 +18,7 @@ defmodule SpotOn.Application do
         # Start the Telemetry supervisor
         SpotOnWeb.Telemetry,
         # Start the endpoint when the application starts
-        SpotOnWeb.Endpoint,
+        SpotOnWeb.Endpoint
       ] ++ get_spotify_workers()
 
     # See https://hexdocs.pm/elixir/Supervisor.html
