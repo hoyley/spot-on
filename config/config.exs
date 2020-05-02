@@ -42,4 +42,3 @@ config :spot_on,
 # of this file so it overrides the configuration defined above.
 import_config "#{Mix.env()}.exs"
 import_config "spotify.exs"
-import_config "secret.exs"
