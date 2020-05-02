@@ -1,4 +1,4 @@
-defmodule SpotOn.Repo.Migrations.UpdateSpotifyUsersTable do
+defmodule SpotOn.Repo.Migrations.UpdateSpotifyUsersTableAddLastLogin do
   use Ecto.Migration
 
   def change do
