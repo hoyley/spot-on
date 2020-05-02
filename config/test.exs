@@ -26,3 +26,5 @@ config :spot_on,
 
 # Print only warnings and errors during test
 config :logger, level: :warn
+
+import_config "secret.exs"
