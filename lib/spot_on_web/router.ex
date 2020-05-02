@@ -1,5 +1,6 @@
 defmodule SpotOnWeb.Router do
   use SpotOnWeb, :router
+  import Phoenix.LiveDashboard.Router
 
   pipeline :browser do
     plug :accepts, ["html"]
@@ -27,6 +28,13 @@ defmodule SpotOnWeb.Router do
     get "/error", PageController, :error
     get "/authenticate", AuthController, :authenticate
     get "/authorize", AuthController, :authorize
+  end
+
+  if Mix.env() == :dev do
+    scope "/" do
+      pipe_through :browser
+      live_dashboard "/dashboard", metrics: SpotOnWeb.Telemetry
+    end
   end
 
   # Other scopes may use custom stacks.

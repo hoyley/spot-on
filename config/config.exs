@@ -15,7 +15,7 @@ config :spot_on, SpotOnWeb.Endpoint,
   url: [host: "localhost"],
   secret_key_base: "288cC4WgDoJsDbLh199v6eYOILYcH+MCVU/9u8kuTtfrPXui05RSuIewTNjd8qMA",
   render_errors: [view: SpotOnWeb.ErrorView, accepts: ~w(html json)],
-  pubsub: [name: SpotOn.PubSub, adapter: Phoenix.PubSub.PG2],
+  pubsub_server: SpotOn.PubSub,
   live_view: [signing_salt: "oCaaA7x2"]
 
 config :spot_on, enable_spotify_workers: true

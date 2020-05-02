@@ -11,14 +11,14 @@ defmodule SpotOn.Application do
     # List all child processes to be supervised
     children =
       [
+        # Start the PubSub system
+        {Phoenix.PubSub, name: SpotOn.PubSub},
         # Start the Ecto repository
         SpotOn.Repo,
+        # Start the Telemetry supervisor
+        SpotOnWeb.Telemetry,
         # Start the endpoint when the application starts
         SpotOnWeb.Endpoint,
-        %{
-          id: Phoenix.PubSub.PG2,
-          start: {Phoenix.PubSub.PG2, :start_link, [:spot_on, []]}
-        }
       ] ++ get_spotify_workers()
 
     # See https://hexdocs.pm/elixir/Supervisor.html
