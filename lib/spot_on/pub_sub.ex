@@ -1,6 +1,7 @@
 defmodule SpotOn.PubSub do
   alias SpotOn.Model.Follow
   alias SpotOn.Model.User
+  alias SpotOn.Gen.PlayingTrackFollower
 
   def publish_playing_track_update(user_name, playing_track) do
     Phoenix.PubSub.broadcast(
@@ -62,6 +63,24 @@ defmodule SpotOn.PubSub do
 
   def subscribe_follow_update_follower(user_name) do
     Phoenix.PubSub.subscribe(SpotOn.PubSub, "follow_update_follower:#{user_name}")
+  end
+
+  def publish_follow_state(follow_state = %PlayingTrackFollower{}) do
+    Phoenix.PubSub.broadcast(
+      SpotOn.PubSub,
+      "follow_state_update:*",
+      {:follow_state_update, follow_state}
+    )
+
+    Phoenix.PubSub.broadcast(
+      SpotOn.PubSub,
+      "follow_state_update:#{follow_state.follower_name}",
+      {:follow_state_update, follow_state}
+    )
+  end
+
+  def subscribe_follow_state() do
+    Phoenix.PubSub.subscribe(SpotOn.PubSub, "follow_state_update:*")
   end
 
   def publish_user_update(user = %User{}) do

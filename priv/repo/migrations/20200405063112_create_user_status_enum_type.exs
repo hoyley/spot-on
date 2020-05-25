@@ -9,5 +9,4 @@ defmodule SpotOn.Repo.Migrations.CreateUserStatusEnumType do
   def down do
     UserStatusEnum.drop_type()
   end
-
 end

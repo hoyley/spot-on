@@ -27,13 +27,13 @@ defmodule SpotOnWeb.UserTrack do
     SpotOn.PubSub.subscribe_follow_update_follower(user_name)
     SpotOn.PubSub.subscribe_user_update(user_name)
 
-    user = Model.get_user_by_name(user_name)
+    card_user = Model.get_user_by_name(user_name)
     schedule_tick()
 
     {:ok,
      socket
-     |> assign_follows(user, logged_in_user_name)
-     |> assign_playing_track(user)
+     |> assign_follows(card_user, logged_in_user_name)
+     |> assign_playing_track(card_user)
      |> assign(:spotify_credentials, credentials)}
   end
 
@@ -68,38 +68,25 @@ defmodule SpotOnWeb.UserTrack do
   defp assign_follows(
          socket = %{
            assigns: %{
-             user: %User{} = user,
+             card_user: %User{} = user,
              logged_in_user_name: logged_in_user_name
            }
          }
        ),
        do: assign_follows(socket, user, logged_in_user_name)
 
-  defp assign_follows(socket, user = %User{}, logged_in_user_name) do
-    follow = Model.get_follow_by_follower_name(user.name)
-    users_current_leader = follow && follow.leader_user
-
+  defp assign_follows(socket, card_user = %User{}, logged_in_user_name) do
+    card_user_follow = Model.get_follow_by_follower_name(card_user.name)
     logged_in_user_follow = Model.get_follow_by_follower_name(logged_in_user_name)
+
     logged_in_user_leader = logged_in_user_follow && logged_in_user_follow.leader_user
-
-    # Only allow the logged in user to follow the given user if logged_in_user currently doesn't
-    # have a leader, or if logged_in_user's leader is not the given user. We don't want a circular reference.
-    logged_in_user_can_follow =
-      logged_in_user_name !== user.name &&
-        (logged_in_user_leader == nil ||
-           logged_in_user_leader.name !== user.name) &&
-        (users_current_leader == nil ||
-           users_current_leader.name !== logged_in_user_name)
-
-    logged_in_user_can_unfollow = logged_in_user_leader != nil && logged_in_user_name === user.name
+    card_user_leader = card_user_follow && card_user_follow.leader_user
 
     socket
-    |> assign(:user, user)
-    |> assign(:leader, users_current_leader)
+    |> assign(:card_user, card_user)
+    |> assign(:card_user_leader, card_user_leader)
     |> assign(:logged_in_user_name, logged_in_user_name)
     |> assign(:logged_in_user_leader, logged_in_user_leader)
-    |> assign(:logged_in_user_can_follow, logged_in_user_can_follow)
-    |> assign(:logged_in_user_can_unfollow, logged_in_user_can_unfollow)
   end
 
   def assign_playing_track(socket, %User{status: :revoked}), do: assign_playing_track(socket, nil)

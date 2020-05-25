@@ -13,7 +13,7 @@ defmodule SpotOn.AuthControllerTest do
         conn
         |> Cookies.set_refresh_cookie("refresh")
         |> Cookies.set_access_cookie("access")
-        |> AuthController.authorize(nil)
+        |> AuthController.authorize(%{"origin" => "/"})
 
       assert redirected_to(response, 302) =~
                "https://accounts.spotify.com/authorize"
@@ -26,7 +26,7 @@ defmodule SpotOn.AuthControllerTest do
         conn
         |> Cookies.set_refresh_cookie("refresh")
         |> Cookies.set_access_cookie("access")
-        |> AuthController.authorize(nil)
+        |> AuthController.authorize(%{"origin" => "/"})
 
       assert redirected_to(response, 302) =~
                "https://accounts.spotify.com/authorize"
@@ -45,15 +45,7 @@ defmodule SpotOn.AuthControllerTest do
 
     test "when code provided and Spotify authenticates, authentication succeeds",
          %{conn: conn} do
-      ClientBehaviorMock
-      |> expect(:authenticate, fn url, _params ->
-        assert url == "https://accounts.spotify.com/api/token"
-
-        {:ok,
-         %HTTPoison.Response{
-           body: '{"access_token":"#{default_access_token()}"}'
-         }}
-      end)
+      mock_authenticate()
 
       new_conn =
         conn
@@ -66,7 +58,7 @@ defmodule SpotOn.AuthControllerTest do
 
       response =
         new_conn
-        |> AuthController.authenticate(%{"code" => "spotify_code"})
+        |> AuthController.authenticate(%{"code" => "spotify_code", "state" => "/"})
 
       assert redirected_to(response, 302) == "/"
     end

@@ -21,7 +21,8 @@ defmodule SpotOnWeb.Router do
   scope "/", SpotOnWeb do
     pipe_through :browser
 
-    live "/users", UserTrackList
+    live "/users", UsersView
+    live "/room/:user_name", UserRoom
 
     get "/", PageController, :index
     get "/logout", PageController, :logout

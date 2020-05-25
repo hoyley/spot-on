@@ -1,6 +1,8 @@
-defmodule SpotOn.Gen.DbWorker do
+defmodule SpotOn.Gen.BackgroundEventHandler do
   use GenServer
   alias SpotOn.Model
+  alias SpotOn.Actions
+  alias SpotOn.Gen.PlayingTrackFollower
   require Logger
 
   def start_link(_) do
@@ -11,7 +13,7 @@ defmodule SpotOn.Gen.DbWorker do
   def init(state) do
     SpotOn.PubSub.subscribe_playing_track_update()
     SpotOn.PubSub.subscribe_user_revoke_refresh_token()
-
+    SpotOn.PubSub.subscribe_follow_state()
     {:ok, state}
   end
 
@@ -23,6 +25,30 @@ defmodule SpotOn.Gen.DbWorker do
 
   def handle_info({:user_revoke_refresh_token, user_name}, state) do
     revoke_refresh_token(user_name)
+    {:noreply, state}
+  end
+
+  def handle_info({:update_playing_track, user_name}, state) do
+    revoke_refresh_token(user_name)
+    {:noreply, state}
+  end
+
+  def handle_info(
+        {:follow_state_update,
+         follow_state = %PlayingTrackFollower{
+           state: :follower_inactive,
+           previous_state: previous_state
+         }},
+        state
+      )
+      when previous_state != :follow_initiated do
+    follow_state |> log
+    Actions.stop_follow(follow_state.leader_name, follow_state.follower_name)
+    {:noreply, state}
+  end
+
+  def handle_info({:follow_state_update, follow_state = %PlayingTrackFollower{}}, state) do
+    follow_state |> log
     {:noreply, state}
   end
 
@@ -53,4 +79,10 @@ defmodule SpotOn.Gen.DbWorker do
         raise error
     end
   end
+
+  defp log(state = %PlayingTrackFollower{}),
+    do:
+      Logger.info(
+        "FollowStateUpdate -- #{state.follower_name} | #{state.leader_name} | #{state.state} (follower | leader | state)"
+      )
 end

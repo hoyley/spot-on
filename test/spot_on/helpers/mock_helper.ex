@@ -59,6 +59,7 @@ defmodule SpotOn.Helpers.MockHelper do
         ClientBehaviorMock
         |> expect(:put, fn creds, url, _ ->
           assert url === "https://api.spotify.com/v1/me/player/pause"
+
           assert creds.access_token === credentials.access_token
           assert creds.refresh_token === credentials.refresh_token
 
@@ -90,6 +91,9 @@ defmodule SpotOn.Helpers.MockHelper do
         end)
       end
 
+      def mock_authenticate(),
+        do: mock_authenticate(default_refresh_token(), default_access_token())
+
       def mock_authenticate(refresh_token, new_access_token) do
         ClientBehaviorMock
         |> expect(:authenticate, fn url, params ->
@@ -97,7 +101,10 @@ defmodule SpotOn.Helpers.MockHelper do
           assert params == "grant_type=refresh_token&refresh_token=#{refresh_token}"
 
           {:ok,
-           %HTTPoison.Response{status_code: 200, body: '{"access_token": "#{new_access_token}"}'}}
+           %HTTPoison.Response{
+             status_code: 200,
+             body: '{"access_token": "#{new_access_token}", "refresh_token": "#{refresh_token}"}'
+           }}
         end)
       end
 

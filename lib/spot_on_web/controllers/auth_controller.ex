@@ -10,16 +10,22 @@ defmodule SpotOnWeb.AuthController do
   def authenticate(conn, params) do
     case Authentication.authenticate(conn, params) do
       %ApiSuccess{credentials: credentials} ->
-        Cookies.set_cookies(conn, credentials)
-        |> Actions.update_my_user_tokens()
-        |> redirect(to: "/")
+        %ApiSuccess{result: %{id: user_name}, credentials: new_creds} =
+          Actions.update_my_user_tokens(credentials)
+
+        conn
+        |> Cookies.set_cookies(new_creds)
+        |> put_session("spotify_access_token", new_creds.access_token)
+        |> put_session("spotify_refresh_token", new_creds.refresh_token)
+        |> put_session("logged_in_user_name", user_name)
+        |> redirect(to: params["state"])
 
       %ApiFailure{} ->
         redirect(conn, to: "/error")
     end
   end
 
-  def authorize(conn, _params) do
-    redirect(conn, external: Authorization.url())
+  def authorize(conn, _params = %{"origin" => origin}) do
+    redirect(conn, external: Authorization.url(origin))
   end
 end

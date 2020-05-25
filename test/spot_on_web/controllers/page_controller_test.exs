@@ -10,7 +10,7 @@ defmodule SpotOnWeb.PageControllerTest do
         conn
         |> PageController.index(nil)
 
-      assert redirected_to(response, 302) == "/authorize"
+      assert redirected_to(response, 302) == "/authorize?origin=/"
     end
 
     test "when logout, redirect to Spotify logout", %{conn: conn} do

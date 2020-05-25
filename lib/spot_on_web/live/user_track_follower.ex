@@ -1,40 +1,27 @@
 defmodule SpotOnWeb.UserTrackFollower do
   use Phoenix.LiveComponent
-  alias SpotOn.Model.User
-  require Logger
 
   def render(assigns) do
     ~L"""
-    <div>
-      <%= if @logged_in_user_can_follow do %>
-        <button id="<%= @id %>" phx-click="follow" phx-target="<%= '##{@id}' %>">Follow</button>
-      <% end %>
-    </div>
+      <div>
+        <%= unless @card_user_leader == nil do %>
+          <%= 'Following #{@card_user_leader.display_name}' %>
+        <% end %>
+      </div>
     """
   end
 
   def update(
         %{
-          id: id,
-          logged_in_user_can_follow: logged_in_user_can_follow,
-          user: user = %User{}
+          card_user_leader: card_user_leader,
         },
         socket
       ) do
-    {:ok,
-     socket
-     |> assign(:logged_in_user_can_follow, logged_in_user_can_follow)
-     |> assign(:id, id)
-     |> assign(:user, user)}
+    new_socket =
+      socket
+      |> assign(:card_user_leader, card_user_leader)
+
+    {:ok, new_socket}
   end
 
-  def handle_event(
-        "follow",
-        _params,
-        socket = %{assigns: %{user: %User{name: user_name}}}
-      ) do
-    send(self(), {:follow, user_name})
-
-    {:noreply, socket}
-  end
 end

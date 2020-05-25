@@ -24,11 +24,11 @@ defmodule SpotOn.SpotifyApi.Authorization do
          end
        end
   """
-  def url do
+  def url(callback_url \\ "/") do
     if scopes() != "" do
-      scoped_auth()
+      scoped_auth(callback_url)
     else
-      scopeless_auth()
+      scopeless_auth(callback_url)
     end
   end
 
@@ -40,17 +40,17 @@ defmodule SpotOn.SpotifyApi.Authorization do
   end
 
   @doc false
-  def scoped_auth do
+  def scoped_auth(callback_url) do
     "https://accounts.spotify.com/authorize?client_id=#{SpotifyConfig.client_id()}&response_type=code&redirect_uri=#{
       redirect_uri()
-    }&scope=#{scopes()}"
+    }&scope=#{scopes()}&state=#{URI.encode(callback_url)}"
   end
 
   @doc false
-  def scopeless_auth do
+  def scopeless_auth(callback_url) do
     "https://accounts.spotify.com/authorize?client_id=#{SpotifyConfig.client_id()}&response_type=code&redirect_uri=#{
       redirect_uri()
-    }"
+    }&state=#{URI.encode(callback_url)}"
   end
 
   defp redirect_uri() do
