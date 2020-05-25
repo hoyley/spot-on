@@ -1,9 +1,10 @@
 <div>
   <%= live_component @socket, SpotOnWeb.UserTrackList, id: "rooms-user",
-    logged_in_user: @logged_in_user, users: [@room_user], spotify_credentials: @spotify_credentials %>
+    logged_in_user: @logged_in_user, users: [@room_user], spotify_credentials: @spotify_credentials, display_mode: :full %>
   </div>
   <div class="divider track-divider text-center" data-content="Followers"></div>
   <%= live_component @socket, SpotOnWeb.UserTrackList, id: "rooms-followers",
-    logged_in_user: @logged_in_user, users: @followers, spotify_credentials: @spotify_credentials %>
+    logged_in_user: @logged_in_user, users: @followers, spotify_credentials: @spotify_credentials,
+    display_mode: :simple %>
   </div>
 </div>

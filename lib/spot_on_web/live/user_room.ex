@@ -4,6 +4,7 @@ defmodule SpotOnWeb.UserRoom do
   require Logger
   alias SpotOn.Model
   alias SpotOn.Model.User
+  alias SpotOn.Model.Follow
   alias SpotOn.Actions
   alias SpotOn.SpotifyApi.Credentials
   alias SpotOnWeb.Router.Helpers, as: Routes
@@ -17,6 +18,9 @@ defmodule SpotOnWeb.UserRoom do
         },
         socket
       ) do
+
+    SpotOn.PubSub.subscribe_follow_update()
+
     {:ok,
      socket
      |> assign(
@@ -39,7 +43,6 @@ defmodule SpotOnWeb.UserRoom do
         _uri,
         socket = %{
           assigns: %{
-            spotify_credentials: creds,
             logged_in_user_name: logged_in_user_name
           }
         }
@@ -47,8 +50,6 @@ defmodule SpotOnWeb.UserRoom do
     room_user_name = params["user_name"]
     room_user = Model.get_user_by_name(room_user_name)
     logged_in_user = Model.get_user_by_name(logged_in_user_name)
-
-    Actions.start_follow(creds, room_user_name)
 
     {:noreply,
      socket
@@ -64,11 +65,25 @@ defmodule SpotOnWeb.UserRoom do
      |> redirect(to: "#{Routes.auth_path(socket, :authorize)}?origin=#{path}")}
   end
 
-  def assign_room_user(_socket, nil) do
+  def handle_info({:follow_update, changed_follow = %Follow{}}, socket = %{
+    assigns: %{
+      followers: followers,
+      room_user: room_user
+    }}) do
+    any_follower_update = followers |> Enum.any?(&(&1.name === changed_follow.follower_user.name))
+    leader_update = changed_follow.leader_user.name == room_user.name
+
+    case any_follower_update || leader_update do
+      true -> {:noreply, socket |> assign_room_user(room_user)}
+      false -> {:noreply, socket}
+    end
+  end
+
+  defp assign_room_user(_socket, nil) do
     raise "User not found"
   end
 
-  def assign_room_user(socket, room_user = %User{}) do
+  defp assign_room_user(socket, room_user = %User{}) do
     followers = Actions.get_following_users(room_user.name)
 
     socket

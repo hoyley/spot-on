@@ -13,7 +13,8 @@ defmodule SpotOnWeb.UserTrackList do
                     "logged_in_user_name" => @logged_in_user.name,
                     "user_name" => user.name,
                     "spotify_access_token" => @spotify_credentials.access_token,
-                    "spotify_refresh_token" => @spotify_credentials.refresh_token} %>
+                    "spotify_refresh_token" => @spotify_credentials.refresh_token,
+                    "display_mode" => @display_mode} %>
                     </div>
             </div>
           <% end %>

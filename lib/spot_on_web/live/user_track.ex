@@ -10,6 +10,9 @@ defmodule SpotOnWeb.UserTrack do
   require Logger
 
   @playing_track_progress_tick_ms 20
+  @type display_mode ::
+          :full
+          | :simple
 
   def mount(
         _params,
@@ -17,7 +20,8 @@ defmodule SpotOnWeb.UserTrack do
           "user_name" => user_name,
           "logged_in_user_name" => logged_in_user_name,
           "spotify_access_token" => spotify_access_token,
-          "spotify_refresh_token" => spotify_refresh_token
+          "spotify_refresh_token" => spotify_refresh_token,
+          "display_mode" => display_mode
         },
         socket
       ) do
@@ -34,8 +38,15 @@ defmodule SpotOnWeb.UserTrack do
      socket
      |> assign_follows(card_user, logged_in_user_name)
      |> assign_playing_track(card_user)
-     |> assign(:spotify_credentials, credentials)}
+     |> assign(:spotify_credentials, credentials)
+     |> assign(:display_mode, display_mode)}
   end
+
+  def render(assigns = %{ display_mode: :simple }), do:
+    SpotOnWeb.UserTrackSimple.render(assigns)
+
+  def render(assigns = %{ display_mode: :full }), do:
+    SpotOnWeb.UserTrackFull.render(assigns)
 
   def handle_info({:update_playing_track, _user_name, track}, socket) do
     {:noreply, socket |> assign_playing_track(track)}

@@ -1,5 +1,5 @@
 <div>
   <h3 class="ml-2">Welcome <%= @logged_in_user.display_name %></h3>
   <%= live_component @socket, SpotOnWeb.UserTrackList, id: "all-users",
-    logged_in_user: @logged_in_user, users: @users, spotify_credentials: @spotify_credentials %>
+    logged_in_user: @logged_in_user, users: @users, spotify_credentials: @spotify_credentials, display_mode: :full %>
 </div>
