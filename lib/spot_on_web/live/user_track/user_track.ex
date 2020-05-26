@@ -42,11 +42,9 @@ defmodule SpotOnWeb.UserTrack do
      |> assign(:display_mode, display_mode)}
   end
 
-  def render(assigns = %{ display_mode: :simple }), do:
-    SpotOnWeb.UserTrackSimple.render(assigns)
+  def render(assigns = %{display_mode: :simple}), do: SpotOnWeb.UserTrackSimple.render(assigns)
 
-  def render(assigns = %{ display_mode: :full }), do:
-    SpotOnWeb.UserTrackFull.render(assigns)
+  def render(assigns = %{display_mode: :full}), do: SpotOnWeb.UserTrackFull.render(assigns)
 
   def handle_info({:update_playing_track, _user_name, track}, socket) do
     {:noreply, socket |> assign_playing_track(track)}

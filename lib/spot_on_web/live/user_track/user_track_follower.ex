@@ -13,7 +13,7 @@ defmodule SpotOnWeb.UserTrackFollower do
 
   def update(
         %{
-          card_user_leader: card_user_leader,
+          card_user_leader: card_user_leader
         },
         socket
       ) do
@@ -23,5 +23,4 @@ defmodule SpotOnWeb.UserTrackFollower do
 
     {:ok, new_socket}
   end
-
 end

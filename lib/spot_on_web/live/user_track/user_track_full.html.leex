@@ -1,0 +1,29 @@
+<div>
+  <div class="card-header">
+    <div class="container">
+      <div class="columns track-header">
+        <div class="column track-header">
+          <div class="card-title h5"><%= @card_user.display_name %></div>
+        </div>
+        <div class="column track-header col-auto">
+          <%= live_component @socket, SpotOnWeb.UserTrackFollowToggle, id: "user_track_follow_toggle-#{@card_user.name}",
+            card_user: @card_user, card_user_leader: @card_user_leader, logged_in_user_name: @logged_in_user_name,
+            logged_in_user_leader: @logged_in_user_leader %>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <%= if @estimated_track != nil do %><div class="card-body">
+    <%= live_component @socket, SpotOnWeb.PlayingTrack, playing_track: @estimated_track %>
+  </div><% end %>
+
+  <div class="card-footer">
+    <div class="card-subtitle text-gray">
+      <%= live_component @socket, SpotOnWeb.UserTrackFollower, id: "user_track_follow-#{@card_user.name}",
+          card_user_leader: @card_user_leader %>
+      <%= live_component @socket, SpotOnWeb.UserLastActivity, user: @card_user %>
+    </div>
+  </div>
+</div>
+

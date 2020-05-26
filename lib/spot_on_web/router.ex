@@ -25,6 +25,7 @@ defmodule SpotOnWeb.Router do
     live "/room/:user_name", UserRoom
 
     get "/", PageController, :index
+    get "/home", PageController, :home
     get "/logout", PageController, :logout
     get "/error", PageController, :error
     get "/authenticate", AuthController, :authenticate

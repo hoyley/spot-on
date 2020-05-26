@@ -18,7 +18,6 @@ defmodule SpotOnWeb.UserRoom do
         },
         socket
       ) do
-
     SpotOn.PubSub.subscribe_follow_update()
 
     {:ok,
@@ -65,11 +64,15 @@ defmodule SpotOnWeb.UserRoom do
      |> redirect(to: "#{Routes.auth_path(socket, :authorize)}?origin=#{path}")}
   end
 
-  def handle_info({:follow_update, changed_follow = %Follow{}}, socket = %{
-    assigns: %{
-      followers: followers,
-      room_user: room_user
-    }}) do
+  def handle_info(
+        {:follow_update, changed_follow = %Follow{}},
+        socket = %{
+          assigns: %{
+            followers: followers,
+            room_user: room_user
+          }
+        }
+      ) do
     any_follower_update = followers |> Enum.any?(&(&1.name === changed_follow.follower_user.name))
     leader_update = changed_follow.leader_user.name == room_user.name
 

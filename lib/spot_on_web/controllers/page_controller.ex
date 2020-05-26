@@ -18,6 +18,11 @@ defmodule SpotOnWeb.PageController do
     redirect(conn, to: "/authorize?origin=/")
   end
 
+  def home(conn = %Plug.Conn{}, _params) do
+    user_name = conn |> get_session(:logged_in_user_name)
+    redirect(conn, to: "/room/#{user_name}")
+  end
+
   def logout(conn = %Plug.Conn{}, _params) do
     conn2 =
       conn
