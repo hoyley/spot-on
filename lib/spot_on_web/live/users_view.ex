@@ -18,13 +18,9 @@ defmodule SpotOnWeb.UsersView do
         },
         socket
       ) do
+    SpotOn.PubSub.subscribe_follow_update()
+
     logged_in_user = Model.get_user_by_name(user_name)
-
-    all_users =
-      Actions.get_all_users()
-      |> Enum.sort(sort_function(logged_in_user))
-
-    Model.update_user_last_login(logged_in_user)
 
     {:ok,
      socket
@@ -33,7 +29,7 @@ defmodule SpotOnWeb.UsersView do
        Credentials.new(access_token, refresh_token)
      )
      |> assign(:logged_in_user, logged_in_user)
-     |> assign(:users, all_users)}
+     |> assign_users}
   end
 
   def mount(_params, _session, socket) do
@@ -42,7 +38,20 @@ defmodule SpotOnWeb.UsersView do
      |> redirect(to: "#{Routes.auth_path(socket, :authorize)}?origin=/users")}
   end
 
-  def sort_function(logged_in_user = %User{}) do
+  def assign_users(socket = %{assigns: %{logged_in_user: logged_in_user}}) do
+    all_users =
+      Actions.get_all_users()
+      |> Enum.sort(sort_function(logged_in_user))
+
+    Model.update_user_last_login(logged_in_user)
+
+    socket
+    |> assign(:users, all_users)
+  end
+
+  def handle_info({:follow_update, _}, socket), do: {:noreply, socket |> assign_users}
+
+  defp sort_function(logged_in_user = %User{}) do
     fn user1, user2 ->
       user1_date =
         max(DateTime.to_unix(user1.last_login), DateTime.to_unix(user1.last_spotify_activity))

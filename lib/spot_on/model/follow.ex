@@ -18,5 +18,6 @@ defmodule SpotOn.Model.Follow do
     |> unique_constraint(:unique_constraint_leader_follower,
       name: :unique_leader_follower
     )
+    |> unique_constraint(:follower_user)
   end
 end
