@@ -12,33 +12,23 @@ defmodule SpotOnWeb.UsersView do
   def mount(
         _params,
         _session = %{
-          "logged_in_user_name" => user_name,
           "spotify_access_token" => access_token,
           "spotify_refresh_token" => refresh_token
         },
         socket
       ) do
-    SpotOn.PubSub.subscribe_follow_update()
-
-    logged_in_user = Model.get_user_by_name(user_name)
+    creds = Credentials.new(access_token, refresh_token)
+    %{result: logged_in_user, credentials: new_creds} = Actions.get_my_user(creds)
 
     {:ok,
      socket
-     |> assign(
-       :spotify_credentials,
-       Credentials.new(access_token, refresh_token)
-     )
-     |> assign(:logged_in_user, logged_in_user)
-     |> assign_users}
+     |> assign(:spotify_credentials, new_creds)
+     |> assign_user(logged_in_user)}
   end
 
-  def mount(_params, _session, socket) do
-    {:ok,
-     socket
-     |> redirect(to: "#{Routes.auth_path(socket, :authorize)}?origin=/users")}
-  end
+  def mount(_params, _session, socket), do: {:ok, socket |> redirect_to_auth}
 
-  def assign_users(socket = %{assigns: %{logged_in_user: logged_in_user}}) do
+  defp assign_user(socket, logged_in_user = %User{}) do
     all_users =
       Actions.get_all_users()
       |> Enum.sort(sort_function(logged_in_user))
@@ -46,12 +36,16 @@ defmodule SpotOnWeb.UsersView do
     Model.update_user_last_login(logged_in_user)
 
     socket
+    |> assign(:logged_in_user, logged_in_user)
     |> assign(:users, all_users)
   end
 
-  def handle_info({:follow_update, _}, socket), do: {:noreply, socket |> assign_users}
+  defp assign_user(socket, nil), do: {:ok, socket |> redirect_to_auth}
 
-  defp sort_function(logged_in_user = %User{}) do
+  defp redirect_to_auth(socket),
+    do: socket |> redirect(to: "#{Routes.auth_path(socket, :authorize)}?origin=/users")
+
+  def sort_function(logged_in_user = %User{}) do
     fn user1, user2 ->
       user1_date =
         max(DateTime.to_unix(user1.last_login), DateTime.to_unix(user1.last_spotify_activity))

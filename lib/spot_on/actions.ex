@@ -3,6 +3,7 @@ defmodule SpotOn.Actions do
   alias SpotOn.Gen.FollowerSupervisor
   alias SpotOn.SpotifyApi.Api
   alias SpotOn.SpotifyApi.ApiSuccess
+  alias SpotOn.SpotifyApi.ApiFailure
   alias SpotOn.SpotifyApi.Credentials
   alias SpotOn.SpotifyApi.Profile
   alias SpotOn.SpotifyApi.Cookies
@@ -10,8 +11,12 @@ defmodule SpotOn.Actions do
   require Logger
 
   def get_my_user(conn = %Credentials{}) do
-    %ApiSuccess{result: profile} = Api.get_my_profile(conn)
-    Model.get_user_by_name(profile.id)
+    with %ApiSuccess{result: profile, credentials: new_creds} <- Api.get_my_profile(conn),
+         user_result <- Model.get_user_by_name(profile.id) do
+      %{result: user_result, credentials: new_creds}
+    else
+      failure = %ApiFailure{} -> raise failure
+    end
   end
 
   def get_credentials_by_user_id(user_id) do
@@ -107,12 +112,15 @@ defmodule SpotOn.Actions do
   end
 
   def update_my_user_tokens(conn = %Plug.Conn{}) do
-    %ApiSuccess{credentials: new_creds} =
+    success =
+      %ApiSuccess{credentials: new_creds} =
       conn
       |> Credentials.new()
       |> update_my_user_tokens()
 
     Cookies.set_cookies(conn, new_creds)
+
+    success
   end
 
   def update_my_user_tokens(creds = %Credentials{}) do

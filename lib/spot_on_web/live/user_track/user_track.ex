@@ -140,11 +140,6 @@ defmodule SpotOnWeb.UserTrack do
     |> assign(:estimated_track, track && get_estimated_track(track, updated_at, 0))
   end
 
-  def terminate(reason, socket) do
-    IO.inspect(reason)
-    {:noreply, socket}
-  end
-
   defp do_follow(socket, leader_name, creds = %Credentials{}) do
     %{credentials: new_creds} = Actions.start_follow(creds, leader_name)
 

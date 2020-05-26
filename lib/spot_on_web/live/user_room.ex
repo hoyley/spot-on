@@ -22,10 +22,7 @@ defmodule SpotOnWeb.UserRoom do
 
     {:ok,
      socket
-     |> assign(
-       :spotify_credentials,
-       Credentials.new(access_token, refresh_token)
-     )
+     |> assign(:spotify_credentials, Credentials.new(access_token, refresh_token))
      |> assign(:logged_in_user_name, logged_in_user_name)}
   end
 
@@ -34,35 +31,44 @@ defmodule SpotOnWeb.UserRoom do
         _session,
         socket
       ) do
-    {:ok, socket}
+    {:ok, socket |> redirect_to_auth}
   end
 
   def handle_params(
-        params,
+        %{"user_name" => room_user_name},
         _uri,
         socket = %{
           assigns: %{
-            logged_in_user_name: logged_in_user_name
+            spotify_credentials: credentials
           }
         }
       ) do
-    room_user_name = params["user_name"]
+    %{result: logged_in_user, credentials: new_creds} = Actions.get_my_user(credentials)
     room_user = Model.get_user_by_name(room_user_name)
-    logged_in_user = Model.get_user_by_name(logged_in_user_name)
 
     {:noreply,
      socket
+     |> assign(:spotify_credentials, new_creds)
      |> assign_room_user(room_user)
-     |> assign(:logged_in_user, logged_in_user)}
+     |> assign_logged_in_user(logged_in_user)}
   end
 
-  def handle_params(_params, uri, socket) do
-    path = URI.parse(uri).path
+  def handle_params(_params, _uri, socket), do: {:noreply, socket |> redirect_to_auth}
 
-    {:noreply,
-     socket
-     |> redirect(to: "#{Routes.auth_path(socket, :authorize)}?origin=#{path}")}
+  defp assign_logged_in_user(socket, nil), do: socket |> redirect_to_auth
+
+  defp assign_logged_in_user(socket, logged_in_user = %User{}),
+    do: socket |> assign(:logged_in_user, logged_in_user)
+
+  defp assign_room_user(socket, room_user = %User{}) do
+    followers = Actions.get_following_users(room_user.name)
+
+    socket
+    |> assign(:room_user, room_user)
+    |> assign(:followers, followers)
   end
+
+  defp assign_room_user(_socket, nil), do: raise("User not found")
 
   def handle_info(
         {:follow_update, changed_follow = %Follow{}},
@@ -82,15 +88,6 @@ defmodule SpotOnWeb.UserRoom do
     end
   end
 
-  defp assign_room_user(_socket, nil) do
-    raise "User not found"
-  end
-
-  defp assign_room_user(socket, room_user = %User{}) do
-    followers = Actions.get_following_users(room_user.name)
-
-    socket
-    |> assign(:room_user, room_user)
-    |> assign(:followers, followers)
-  end
+  defp redirect_to_auth(socket),
+    do: socket |> redirect(to: "#{Routes.auth_path(socket, :authorize)}?origin=/home")
 end
