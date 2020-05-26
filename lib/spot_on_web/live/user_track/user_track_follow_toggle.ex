@@ -8,11 +8,12 @@ defmodule SpotOnWeb.UserTrackFollowToggle do
     ~L"""
     <div>
       <%= if @visible do %>
-        <div class="form-group">
-          <fieldset class="follow-toggle" <%= @disabled_state %>>
-            <label class="form-switch">
+        <div class="form-group follow-toggle">
+          <fieldset <%= @disabled_state %>>
+            <label class="form-switch pr-0">
               <%= checkbox(:user_card, :follow, phx_click: "follow", phx_target: @myself, value: @toggle_state) %>
-              <i class="form-icon"></i>Follow
+              <i class="form-icon"></i>
+              <div class="text-gray">Follow</div>
             </label>
           </fieldset>
         </div>
