@@ -3,7 +3,7 @@
     <div class="container">
       <div class="columns track-header">
         <div class="column track-header">
-          <div class="card-title h5"><%= @card_user.display_name %></div>
+          <div class="card-title h5"><%= link(@card_user.display_name, to: "/room/#{@card_user.name}") %></div>
         </div>
         <div class="column track-header col-auto">
           <%= live_component @socket, SpotOnWeb.UserTrackFollowToggle, id: "user_track_follow_toggle-#{@card_user.name}",
