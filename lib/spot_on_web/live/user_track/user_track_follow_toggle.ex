@@ -9,7 +9,7 @@ defmodule SpotOnWeb.UserTrackFollowToggle do
     <div>
       <%= if @visible do %>
         <div class="form-group follow-toggle">
-          <fieldset <%= @disabled_state %>>
+          <fieldset>
             <label class="form-switch pr-0">
               <%= checkbox(:user_card, :follow, phx_click: "follow", phx_target: @myself, value: @toggle_state) %>
               <i class="form-icon"></i>
@@ -32,12 +32,6 @@ defmodule SpotOnWeb.UserTrackFollowToggle do
       ) do
     visible = logged_in_user_name != card_user.name
 
-    disabled_state =
-      case logged_in_user_leader != nil && logged_in_user_leader.name !== card_user.name do
-        true -> "disabled"
-        false -> ""
-      end
-
     toggle_state = logged_in_user_leader != nil && logged_in_user_leader.name === card_user.name
 
     {:ok,
@@ -45,7 +39,6 @@ defmodule SpotOnWeb.UserTrackFollowToggle do
      |> assign(:card_user_name, card_user.name)
      |> assign(:card_user, card_user)
      |> assign(:visible, visible)
-     |> assign(:disabled_state, disabled_state)
      |> assign(:toggle_state, toggle_state)}
   end
 

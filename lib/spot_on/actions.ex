@@ -34,8 +34,7 @@ defmodule SpotOn.Actions do
   end
 
   def start_follow(creds = %Credentials{}, leader = %User{}, follower = %User{}) do
-    existing_follow = Model.get_follow(leader.name, follower.name)
-    existing_follow && Model.delete_follow(existing_follow)
+    stop_follow(follower.name)
 
     {:ok, follow} =
       Model.create_follow(%{
