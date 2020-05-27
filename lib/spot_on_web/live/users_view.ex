@@ -4,6 +4,8 @@ defmodule SpotOnWeb.UsersView do
   alias SpotOn.Actions
   alias SpotOn.Model
   alias SpotOn.Model.User
+  alias SpotOn.SpotifyApi.ApiSuccess
+  alias SpotOn.SpotifyApi.ApiFailure
   alias SpotOn.SpotifyApi.Credentials
   alias SpotOnWeb.Router.Helpers, as: Routes
 
@@ -16,17 +18,28 @@ defmodule SpotOnWeb.UsersView do
           "spotify_refresh_token" => refresh_token
         },
         socket
-      ) do
+      )
+      when is_binary(refresh_token) and is_binary(access_token) do
     creds = Credentials.new(access_token, refresh_token)
-    %{result: logged_in_user, credentials: new_creds} = Actions.get_my_user(creds)
 
     {:ok,
      socket
-     |> assign(:spotify_credentials, new_creds)
-     |> assign_user(logged_in_user)}
+     |> assign(:spotify_credentials, creds)
+     |> assign_user(Actions.get_my_user(creds))}
   end
 
   def mount(_params, _session, socket), do: {:ok, socket |> redirect_to_auth}
+
+  defp assign_user(socket, %ApiSuccess{credentials: credentials, result: user = %User{}}),
+    do:
+      socket
+      |> assign(:spotify_credentials, credentials)
+      |> assign_user(user)
+
+  defp assign_user(socket, %ApiFailure{status: :refresh_revoked}),
+    do:
+      socket
+      |> redirect_to_auth
 
   defp assign_user(socket, logged_in_user = %User{}) do
     all_users =

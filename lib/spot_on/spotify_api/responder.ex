@@ -22,7 +22,6 @@ defmodule Responder do
       require Logger
       @default_retry_after 2
 
-
       # special handling for 'too many requests' status
       # in order to know when to retry
       def handle_response(

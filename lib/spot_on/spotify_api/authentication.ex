@@ -50,7 +50,9 @@ defmodule SpotOn.SpotifyApi.Authentication do
     end
   end
 
-  def refresh(%Credentials{refresh_token: nil}), do: :unauthorized
+  def refresh(creds = %Credentials{refresh_token: nil}),
+    do: ApiFailure.new(creds, "Attempted to refresh connection but no refresh token present.")
+
   def refresh(auth = %Credentials{}), do: auth |> body_params |> AuthenticationClient.post(auth)
 
   @doc """

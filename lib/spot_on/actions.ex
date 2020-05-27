@@ -1,6 +1,7 @@
 defmodule SpotOn.Actions do
   alias SpotOn.Model
   alias SpotOn.Gen.FollowerSupervisor
+  alias SpotOn.Gen.PlayingTrackSync
   alias SpotOn.SpotifyApi.Api
   alias SpotOn.SpotifyApi.ApiSuccess
   alias SpotOn.SpotifyApi.ApiFailure
@@ -8,14 +9,15 @@ defmodule SpotOn.Actions do
   alias SpotOn.SpotifyApi.Profile
   alias SpotOn.SpotifyApi.Cookies
   alias SpotOn.Model.User
+  alias SpotOn.Model.Follow
   require Logger
 
   def get_my_user(conn = %Credentials{}) do
     with %ApiSuccess{result: profile, credentials: new_creds} <- Api.get_my_profile(conn),
          user_result <- Model.get_user_by_name(profile.id) do
-      %{result: user_result, credentials: new_creds}
+      ApiSuccess.new(new_creds, user_result)
     else
-      failure = %ApiFailure{} -> raise failure
+      failure = %ApiFailure{} -> failure
     end
   end
 
@@ -83,21 +85,7 @@ defmodule SpotOn.Actions do
       when leader_name !== nil do
     %ApiSuccess{result: profile, credentials: creds} = Api.get_my_profile(conn)
     follower_name = profile.id
-    stop_follow(creds, leader_name, follower_name)
-  end
-
-  def stop_follow(leader_name, follower_name) do
-    creds = get_credentials_by_user_id(follower_name)
-    stop_follow(creds, leader_name, follower_name)
-  end
-
-  def stop_follow(creds = %Credentials{}, leader_name, follower_name) do
-    follow = Model.get_follow(leader_name, follower_name)
-
-    follow && Model.delete_follow(follow) &&
-      SpotOn.PubSub.publish_follow_update(follow)
-
-    FollowerSupervisor.stop_follow(leader_name, follower_name)
+    stop_follow(leader_name, follower_name)
 
     %{
       follower_name: follower_name,
@@ -106,9 +94,34 @@ defmodule SpotOn.Actions do
     }
   end
 
-  def stop_follow(follower_name) do
-    follow = Model.get_follow_by_follower_name(follower_name)
-    follow && stop_follow(follow.leader_user.name, follow.follower_user.name)
+  def stop_follow(leader_name, follower_name),
+    do:
+      Model.get_follow(leader_name, follower_name)
+      |> stop_follow
+
+  def stop_follow(nil), do: nil
+
+  def stop_follow(follow = %Follow{}) do
+    Model.delete_follow(follow)
+    SpotOn.PubSub.publish_follow_update(follow)
+
+    FollowerSupervisor.stop_follow(follow.leader_user.name, follow.follower_user.name)
+  end
+
+  def stop_follow(follower_name),
+    do:
+      Model.get_follow_by_follower_name(follower_name)
+      |> stop_follow
+
+  def stop_follow_by_leader(follower_name),
+    do:
+      Model.get_follows_by_leader_name(follower_name)
+      |> Enum.each(&stop_follow/1)
+
+  def stop_all_user_actions(user = %User{}) do
+    stop_follow(user.name)
+    stop_follow_by_leader(user.name)
+    PlayingTrackSync.stop_sync(user.name)
   end
 
   def update_my_user_tokens(conn = %Plug.Conn{}) do

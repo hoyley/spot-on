@@ -199,6 +199,16 @@ defmodule SpotOn.Model do
     Repo.one(query) |> Repo.preload([:leader_user, :follower_user])
   end
 
+  def get_follows_by_leader_name(leader_name) do
+    query =
+      from f in Follow,
+        join: u in User,
+        on: f.leader_user_id == u.id,
+        where: u.name == ^leader_name
+
+    Repo.all(query) |> Repo.preload([:leader_user, :follower_user])
+  end
+
   @doc """
   Creates a follow.
 

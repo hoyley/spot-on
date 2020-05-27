@@ -1,6 +1,7 @@
 defmodule SpotOn.Gen.BackgroundEventHandler do
   use GenServer
   alias SpotOn.Model
+  alias SpotOn.Model.User
   alias SpotOn.Actions
   alias SpotOn.Gen.PlayingTrackFollower
   require Logger
@@ -14,6 +15,7 @@ defmodule SpotOn.Gen.BackgroundEventHandler do
     SpotOn.PubSub.subscribe_playing_track_update()
     SpotOn.PubSub.subscribe_user_revoke_refresh_token()
     SpotOn.PubSub.subscribe_follow_state()
+    SpotOn.PubSub.subscribe_user_update()
     {:ok, state}
   end
 
@@ -49,6 +51,16 @@ defmodule SpotOn.Gen.BackgroundEventHandler do
 
   def handle_info({:follow_state_update, follow_state = %PlayingTrackFollower{}}, state) do
     follow_state |> log
+    {:noreply, state}
+  end
+
+  @impl true
+  def handle_info({:user_update, user = %User{status: :revoked}}, state) do
+    Logger.info(
+      "BackgroundEventHandler noticed [#{user.name}] has revoked their Spotify token. Stopping sync."
+    )
+
+    Actions.stop_all_user_actions(user)
     {:noreply, state}
   end
 
