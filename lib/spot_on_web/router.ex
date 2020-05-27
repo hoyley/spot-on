@@ -11,7 +11,7 @@ defmodule SpotOnWeb.Router do
 
     plug :protect_from_forgery
     plug :put_secure_browser_headers
-    plug :put_root_layout, {SpotOnWeb.LayoutView, :root}
+    plug :put_root_layout, {SpotOnWeb.LayoutView, :layout}
   end
 
   pipeline :api do

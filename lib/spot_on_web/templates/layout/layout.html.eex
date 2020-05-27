@@ -16,12 +16,23 @@
 
     <header class="navbar">
       <section class="navbar-section">
+        <h4>Spot On!</h4>
       </section>
       <section class="navbar-section mr-2">
         <%= link "My Room", class: "btn btn-link", to: Routes.page_path(@conn, :home) %>
         <%= link "All Users", class: "btn btn-link", to: Routes.page_path(@conn, :index) %>
         <a class="btn btn-link" href="https://open.spotify.com">Spotify</a>
-        <%= link "Logout", class: "btn btn-link", to: Routes.page_path(@conn, :logout) %>
+
+        <div class="dropdown">
+          <a href="#" class="btn btn-link dropdown-toggle" tabindex="0">
+            <span><%= logged_in_user_name(@conn) %></span> <i class="icon icon-caret"></i>
+          </a>
+          <!-- menu component -->
+          <ul class="menu">
+            <%= link "Logout", class: "btn btn-link", to: Routes.page_path(@conn, :logout) %>
+          </ul>
+        </div>
+
       </section>
     </header>
 
