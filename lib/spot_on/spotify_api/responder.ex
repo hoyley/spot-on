@@ -19,17 +19,17 @@ defmodule Responder do
 
   defmacro __using__(_) do
     quote do
+      require Logger
+      @default_retry_after 2
+
+
       # special handling for 'too many requests' status
       # in order to know when to retry
       def handle_response(
             {message, %HTTPoison.Response{status_code: 429, headers: headers}},
             conn
           ) do
-        {retry_after, ""} =
-          headers
-          |> Enum.find(&(Kernel.elem(&1, 0) == "Retry-After"))
-          |> Kernel.elem(1)
-          |> Integer.parse()
+        retry_after = headers |> get_retry_after
 
         ApiFailure.new(conn, :rate_limit, retry_after)
       end
@@ -107,6 +107,23 @@ defmodule Responder do
 
       defp handle_ok_response(credentials = %Credentials{}, response),
         do: ApiSuccess.new(credentials, response)
+
+      defp get_retry_after(headers) do
+        retry_after_header = headers |> Enum.find(&(Kernel.elem(&1, 0) == "Retry-After"))
+        Logger.info("Spotify returned Retry-After header: #{inspect(retry_after_header)}")
+
+        retry_after_header |> parse_retry_header
+      end
+
+      defp parse_retry_header(retry_after_header) do
+        if retry_after_header && Kernel.tuple_size(retry_after_header) > 1 do
+          retry_after_header
+          |> Kernel.elem(1)
+          |> Integer.parse()
+        else
+          @default_retry_after
+        end
+      end
     end
   end
 end

@@ -6,5 +6,4 @@ defmodule SpotOnWeb.LayoutView do
   def logged_in_user_name(conn = %Conn{}) do
     conn |> get_session(:logged_in_user_name)
   end
-
 end

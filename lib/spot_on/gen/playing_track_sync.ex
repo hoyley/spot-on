@@ -52,7 +52,8 @@ defmodule SpotOn.Gen.PlayingTrackSync do
   end
 
   @impl true
-  def handle_info({:user_update, %User{status: :revoked}}, state = %PlayingTrackSyncState{}) do
+  def handle_info({:user_update, user = %User{status: :revoked}}, state = %PlayingTrackSyncState{}) do
+    Logger.info("PlayingTrackSync received notice that user [#{user.name}] has revoked their Spotify token. Stopping sync.")
     {:stop, :normal, state}
   end
 
