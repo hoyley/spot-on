@@ -63,6 +63,7 @@ defmodule SpotOn.Gen.BackgroundEventHandler do
     Actions.stop_all_user_actions(user)
     {:noreply, state}
   end
+  def handle_info({:user_update, _user}, state), do: {:noreply, state}
 
   defp update_spotify_activity(user_name) do
     try do
