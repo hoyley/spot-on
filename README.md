@@ -1,6 +1,10 @@
 # SpotOn
 
-An Elixir application that leverages the SpotifyAPI to add some cool features.
+SpotOn turns any Spotify user into a live DJ. Followers, who are also Spotify users, can listen to the DJ's currently playing track on their active Spotify player.
+
+The application is written in Elixir and leverages the Spotify API. This application is currently hosted on Gigilixir, but access is limited (request for demo).
+
+Images/Screenshots to come.
 
 ## Dependencies
 - Elixir
